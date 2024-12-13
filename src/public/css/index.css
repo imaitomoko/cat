@@ -1,0 +1,53 @@
+.top__content {
+    margin: 0 auto;
+    padding: 30px 15px;
+    max-width: 760px;
+}
+
+.top__heading {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.user__info {
+    margin-bottom: 20px;
+    text-align: center;
+    display: flex;
+}
+
+.user__ttl {
+    margin-left: 15px;
+}
+
+.news {
+    margin: 20px auto;
+    text-align: center;
+    width: 80%;
+    padding: 5px;
+    border: 1px solid #4f4c4c;
+    border-radius: 3px;
+    height: 50px;
+}
+
+.menu {
+    margin: 20px auto;
+    text-align: center;
+    width: 80%;
+    padding: 15px;
+    background-color: aliceblue;
+}
+
+.menu__button {
+    text-align: center;
+    width: 90%;
+    margin-bottom: 10px;
+    background-color: blue;
+}
+
+a {
+    font-size: 20px;
+    color: #fff;
+    text-align: center;
+    align-items: center;
+    direction: none;
+}
