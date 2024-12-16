@@ -15,6 +15,9 @@
         <h3 class="user__ttl">Fish</h3>
         <h3 class="user__ttl">AAA</h3>
     </div>
+    <div class="news__content">
+        <p class="news__ttl">お知らせ</p>
+    </div>
     <div class="news">
         <p> AAA
         </p>

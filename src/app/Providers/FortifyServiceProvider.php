@@ -12,6 +12,10 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Laravel\Fortify\Fortify;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
+
+
 
 class FortifyServiceProvider extends ServiceProvider
 {
@@ -29,8 +33,22 @@ class FortifyServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Fortify::createUsersUsing(CreateNewUser::class);
+
         Fortify::loginView(function () {
             return view('auth.login');
+        });
+
+        Fortify::authenticateUsing(function (Request $request) {
+            $credentials = [
+                'user_id' => $request->user_id,
+                'password' => $request->password,
+            ];
+
+            if (Auth::attempt($credentials)) {
+                return Auth::user();
+            }
+
+            return null;
         });
 
         RateLimiter::for('login', function (Request $request) {
