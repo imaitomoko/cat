@@ -18,16 +18,14 @@
 
 .user__ttl {
     margin: 0 20px;
+    color: #4f4c4c;
 }
 
 .news__content {
     text-align: center;
     justify-content: center;
     display: flex;
-}
-
-.news__ttl {
-    font-size: 16px;
+    line-height: 13px;
 }
 
 .news {

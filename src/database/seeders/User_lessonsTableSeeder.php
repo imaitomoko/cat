@@ -15,8 +15,20 @@ class User_lessonsTableSeeder extends Seeder
     {
         $param = [
         'user_id' => 1,
-        'lesson_id'=> 1,
-        'status' => '受講中',
+        'lesson_id' => 1,
+        'status' => '未受講',
+        ];
+        DB::table('User_lessons')->insert($param);
+        $param = [
+        'user_id' => 1,
+        'lesson_id' => 2,
+        'status' => '欠席',
+        ];
+        DB::table('User_lessons')->insert($param);
+        $param = [
+        'user_id' => 2,
+        'lesson_id' => 1,
+        'status' => '完了',
         ];
         DB::table('User_lessons')->insert($param);
         //

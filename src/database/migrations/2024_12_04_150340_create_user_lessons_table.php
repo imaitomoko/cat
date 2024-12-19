@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('lesson_id')->constrained()->cascadeOnDelete();
-            $table->string('status', 20);
+            $table->string('status', 50)->default('未受講');;
             $table->timestamps();
         });
     }

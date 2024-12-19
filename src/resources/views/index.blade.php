@@ -7,20 +7,21 @@
 @section('content')
 
 <div class="top__content">
-    <div class="top__heading">
-        <h2>TOP</h2>
-    </div>
+    @foreach($contents as $content)
     <div class="user__info">
-        <h3 class="user__ttl">本校</h3>
-        <h3 class="user__ttl">Fish</h3>
-        <h3 class="user__ttl">AAA</h3>
+        <h3 class="user__ttl">{{ $content->school_name }}</h3>
+        <h3 class="user__ttl">{{ $content->class_name }}</h3>
+        <h3 class="user__ttl">{{ $content->user_name }}さん</h3>
     </div>
-    <div class="news__content">
-        <p class="news__ttl">お知らせ</p>
-    </div>
+    @endforeach
+    <p class="news__content">
+        お知らせ
+    </p>
     <div class="news">
-        <p> AAA
+        @foreach($news as $item)
+        <p>{{ $item->news_list }}
         </p>
+        @endforeach
     </div>
     <div class="menu">
         <div class="menu__button">
@@ -30,7 +31,7 @@
             <a href="">欠席・振替予約</a>
         </div>
         <div class="menu__button">
-            <a href="">メールアドレス登録・変更</a>
+            <a href="/mail">メールアドレス登録・変更</a>
         </div>
     </div>
 </div>
