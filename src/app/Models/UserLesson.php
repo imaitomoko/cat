@@ -17,16 +17,14 @@ class UserLesson extends Model
         'status',
     ];
 
-    public function lessons()
+    public function lesson()
     {
-        return $belongsToMany(Lesson::class, 'lesson_user_lessons', 'user_lesson_id', 'lesson_id')
-                    ->withPivot('status')
-                    ->withTimestamps();
+        return $this->belongsTo(Lesson::class, 'lesson_id');
     }
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
 }

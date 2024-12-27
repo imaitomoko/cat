@@ -43,14 +43,10 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    public function userLessons()
-    {
-        return $this->hasMany(UserLesson::class);
-    }
 
     public function lessons()
     {
-        return $this->belongsToMany(Lesson::class, 'user_lessons')
+        return $this->belongsToMany(Lesson::class, 'user_lessons', 'user_id', 'lesson_id')
                     ->withPivot('status')
                     ->withTimestamps();
     }

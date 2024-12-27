@@ -21,8 +21,8 @@ class LessonsTableSeeder extends Seeder
         'day1' => '金',
         'start_time1' => '16:10',
         'duration1' => 50,
+        'lesson_value1' => '①',
         'max_number' => 8,
-        'lesson_value' => '1',
         ];
         DB::table('lessons')->insert($param);
         $param = [
@@ -33,8 +33,9 @@ class LessonsTableSeeder extends Seeder
         'day1' => '月',
         'start_time1' => '16:10',
         'duration1' => 50,
+        'lesson_value1' => '休校',
         'max_number' => 8,
-        'lesson_value' => '1',
+        
         ];
         DB::table('lessons')->insert($param);
         $param = [
@@ -45,11 +46,12 @@ class LessonsTableSeeder extends Seeder
         'day1' => '月',
         'start_time1' => '16:30',
         'duration1' => 120,
+        'lesson_value1' => '②',
         'day2' => '木',
         'start_time2' => '16:30',
         'duration2' => 120,
+        'lesson_value2' => '②',
         'max_number' => 20,
-        'lesson_value' => '2',
         ];
         DB::table('lessons')->insert($param);
         //

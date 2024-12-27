@@ -1,7 +1,7 @@
 .content {
-    margin: 30px auto;
+    margin: 20px auto;
     padding: 20px 15px;
-    max-width: 640px;
+    max-width: 760px;
 }
 
 .ttl {
@@ -11,7 +11,6 @@
 }
 
 .register__content {
-    width: 90%;
     margin: 60px auto;
 }
 
@@ -62,10 +61,10 @@ input {
     text-align: center;
     align-items: center;
     position: fixed;
-    bottom: 80px;
-    padding: 10px;
+    bottom: 60px;
+    padding: 5px;
     width: 100px;
-    height: 40px;
+    height: 35px;
     border: none;
     border-radius: 3px;
     background: #808080;

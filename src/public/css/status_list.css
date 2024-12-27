@@ -1,0 +1,61 @@
+.content {
+    margin: 20px auto;
+    max-width: 760px;
+}
+
+.ttl {
+    text-align: center;
+    color: #4f4c4c;
+}
+
+.user {
+    display: flex;
+    text-align: center;
+    width: 50%;
+    margin: 10px auto;
+    justify-content: space-between;
+}
+
+.user_inner {
+    font-size: 20px;
+    color: #4f4c4c;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    border: 2px solid #ddd;
+    text-align: center;
+    padding: 8px;
+}
+
+th {
+    background-color: #1cdc15;
+    color: #fff;
+}
+
+.back__button {
+    text-align: center;
+    align-items: center;
+    position: fixed;
+    bottom: 60px;
+    width: 100px;
+    padding: 5px;
+    height: 35px;
+    border: none;
+    border-radius: 3px;
+    background: #808080;
+    cursor: pointer;
+    font-size: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.back {
+    color: #fff;
+    text-decoration: none;
+}

@@ -20,11 +20,12 @@ return new class extends Migration
             $table->string('day1', 10);
             $table->time('start_time1');
             $table->integer('duration1');
+            $table->string('lesson_value1', 10)->default('①');
             $table->string('day2', 10)->nullable();
             $table->time('start_time2')->nullable();
             $table->integer('duration2')->nullable();
+            $table->string('lesson_value2', 10)->nullable();
             $table->integer('max_number');
-            $table->string('lesson_value', 10);
             $table->timestamps();
         });
     }

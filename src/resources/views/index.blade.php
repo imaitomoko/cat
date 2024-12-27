@@ -25,10 +25,10 @@
     </div>
     <div class="menu">
         <div class="menu__button">
-            <a href="">スケジュール確認</a>
+            <a href="/schedule">スケジュール確認</a>
         </div>
         <div class="menu__button">
-            <a href="">欠席・振替予約</a>
+            <a href="/status">欠席・振替予約</a>
         </div>
         <div class="menu__button">
             <a href="/mail">メールアドレス登録・変更</a>
