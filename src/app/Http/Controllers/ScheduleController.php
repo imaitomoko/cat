@@ -3,63 +3,72 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Lesson;
 use App\Models\School;
 use App\Models\SchoolClass;
+use App\Models\UserLesson;
 use Carbon\Carbon;
 
 class ScheduleController extends Controller
 {
     public function index()
     {
-        $contents = Lesson::with(['school', 'schoolClass'])->get();
+        $user = Auth::user();
+        
+        $userLessons = UserLesson::where('user_id', $user->id)->get();
 
+        $schools = [];
+        $classes = [];
 
-        return view('schedule', compact('contents'));
+        // 該当するレッスンが見つかった場合、関連するschoolとclassを取得
+        foreach ($userLessons as $userLesson) {
+            $lesson = Lesson::find($userLesson->lesson_id);
+            $school = School::find($lesson->school_id);
+            $class = SchoolClass::find($lesson->class_id);
+
+            if ($school && $class) {
+                $schools[] = $school;
+                $classes[] = $class;
+            }
+        }
+
+        return view('schedule', compact('user', 'schools', 'classes', 'userLessons'));
     }
 
-    public function search(Request $request)
+
+    public function show(Request $request)
     {
-        $year = $request->input('year');
         $schoolId = $request->input('school_id');
         $classId = $request->input('class_id');
-        $month = $request->input('month', date('m'));
+        $currentMonth = $request->input('month', Carbon::now()->month); // デフォルトは現在の月
+        $currentYear = $request->input('year', Carbon::now()->year);   // デフォルトは現在の年
 
-        // 前月と翌月を計算
-        $currentMonth = Carbon::create($year, $month, 1);
-        $previousMonth = $currentMonth->copy()->subMonth();
-        $nextMonth = $currentMonth->copy()->addMonth();
+        // `school_id` と `class_id` からデータを取得
+        $school = School::findOrFail($schoolId);
+        $class = SchoolClass::findOrFail($classId);
 
-        // 月初と月末を取得
-        $startOfMonth = $currentMonth->copy()->startOfMonth();
-        $endOfMonth = $currentMonth->copy()->endOfMonth();
+        // 指定月の開始日と終了日
+        $startOfMonth = Carbon::create($currentYear, $currentMonth, 1)->startOfMonth();
+        $endOfMonth = $startOfMonth->copy()->endOfMonth();
 
-        // 前月と翌月の月初と月末を取得
-        $startOfPreviousMonth = $previousMonth->copy()->startOfMonth();
-        $endOfPreviousMonth = $previousMonth->copy()->endOfMonth();
+        // 前月・翌月の情報
+        $previousMonth = $startOfMonth->copy()->subMonth();
+        $nextMonth = $startOfMonth->copy()->addMonth();
 
-        $startOfNextMonth = $nextMonth->copy()->startOfMonth();
-        $endOfNextMonth = $nextMonth->copy()->endOfMonth();
-
-        $school = School::find($schoolId);
-        $class = SchoolClass::find($classId);
-
-        // 条件に基づくレッスンを取得
-        $lessons = Lesson::where('year', $year)
-            ->where('school_id', $schoolId)
+        // レッスンを取得 (school_id と class_id に基づく)
+        $lessons = Lesson::where('school_id', $schoolId)
             ->where('class_id', $classId)
             ->get();
 
-        $daysInCurrentMonth = $this->generateCalendar($startOfMonth, $endOfMonth, $lessons);
-        $daysInPreviousMonth = $this->generateCalendar($startOfPreviousMonth, $endOfPreviousMonth, $lessons);
-        $daysInNextMonth = $this->generateCalendar($startOfNextMonth, $endOfNextMonth, $lessons);
+        Carbon::setLocale('ja');
 
-        // カレンダー用の日付データを作成
+        // カレンダー用のデータ作成
         $daysInMonth = [];
-        for ($date = $startOfMonth; $date <= $endOfMonth; $date->addDay()) {
-            $lessonsForDay = $lesson->filter(function ($lesson) use ($date) {
-            // レッスンのday1またはday2と一致する場合
-            return $lesson->day1 === $date->format('l') || $lesson->day2 === $date->format('l');
+        for ($date = $startOfMonth->copy(); $date <= $endOfMonth; $date->addDay()) {
+            $dayName = $date->isoFormat('ddd'); // 日本語の曜日 (e.g.金)
+            $lessonsForDay = $lessons->filter(function ($lesson) use ($dayName) {
+                return $lesson->day1 === $dayName || $lesson->day2 === $dayName;
             });
 
             $daysInMonth[] = [
@@ -68,8 +77,16 @@ class ScheduleController extends Controller
             ];
         }
 
-        return view('schedule_list', compact('year', 'month', 'daysInMonth', 'school', 'class','daysInCurrentMonth', 'daysInPreviousMonth', 'daysInNextMonth', 'schoolId', 'classId', 'previousMonth', 'nextMonth'));
-    }
+        return view('schedule_list', compact(
+            'school',
+            'class',
+            'daysInMonth', 
+            'previousMonth', 
+            'nextMonth', 
+            'startOfMonth', 
+            'endOfMonth'
+        ));
+}
 
     private function generateCalendar($startOfMonth, $endOfMonth, $lessons)
     {

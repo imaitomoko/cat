@@ -8,19 +8,24 @@
 .calendar h2 {
     margin-bottom: 20px;
     font-size: 24px;
-    color: #333;
+    color: #4f4c4c;
+}
+
+.month {
+    color: #4f4c4c;
+    font-size: 16px;
+    font-weight: bold;
 }
 
 .month-navigation {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 20px;
+    margin-bottom: 5px;
 }
 
-.previous-month,
-.next-month {
+.month_change {
     text-decoration: none;
-    font-size: 18px;
+    font-size: 15px;
     color: #007bff;
     padding: 5px;
 }
@@ -45,6 +50,10 @@
     font-size: 18px;
 }
 
+.weekday {
+    color: #4f4c4c;
+}
+
 .sunday {
     color: red;
 }
@@ -56,18 +65,32 @@
 .calendar td {
     height: 100px;
     background-color: #fafafa;
+    position: relative;
 }
 
 .calendar td strong {
     display: block;
     margin-bottom: 5px;
-    color: #333;
+    color: #4f4c4c;
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    font-size: 14px;
+    color: inherit;
+}
+
+.calendar td.sunday strong {
+    color: red;
+}
+
+.calendar td.saturday strong {
+    color: blue;
 }
 
 .calendar td p {
-    font-size: 12px;
-    margin: 0;
-    color: #555;
+    font-size: 18px;
+    margin: 10px 0 0;
+    color: #4f4c4c;
 }
 
 .back__button {
@@ -87,7 +110,7 @@
     transform: translateX(-50%);
 }
 
-a {
+.back {
     color: #fff;
     text-decoration: none;
 }

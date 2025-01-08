@@ -10,25 +10,15 @@
     <h2> {{ $school->school_name }}   {{ $class->class_name }}</h2>
     <div class="month-navigation">
         <!-- 前月ボタン -->
-        <a href="{{ route('schedule.search', [
-            'year' => $previousMonth->year, 
-            'month' => $previousMonth->month, 
-            'school_id' => $schoolId, 
-            'class_id' => $classId
-            ]) }}" class="previous-month">
+        <a class="month_change" href="{{ route('schedule.list', ['school_id' => $school->id, 'class_id' => $class->id, 'month' => $previousMonth->month]) }}">
             << 前月
         </a>
 
         <!-- 現在の月 -->
-        <span>{{ $month }}月</span>
+        <span class="month">{{ $startOfMonth->format('Y年m月') }}</span>
 
         <!-- 翌月ボタン -->
-        <a href="{{ route('schedule.search', [
-            'year' => $nextMonth->year, 
-            'month' => $nextMonth->month, 
-            'school_id' => $schoolId, 
-            'class_id' => $classId
-        ]) }}" class="next-month">
+        <a class="month_change" href="{{ route('schedule.list', ['school_id' => $school->id, 'class_id' => $class->id, 'month' => $nextMonth->month]) }}">
             翌月 >>
         </a>
     </div>
@@ -36,23 +26,17 @@
         <thead>
             <tr>
                 <th class="sunday">日</th>
-                <th>月</th>
-                <th>火</th>
-                <th>水</th>
-                <th>木</th>
-                <th>金</th>
+                <th class="weekday">月</th>
+                <th class="weekday">火</th>
+                <th class="weekday">水</th>
+                <th class="weekday">木</th>
+                <th class="weekday">金</th>
                 <th class="saturday">土</th>
             </tr>
         </thead>
         <tbody>
             @php
-                if (!empty($daysInMonth) && isset($daysInMonth[0])) {
-                    $dayOfWeek = $daysInMonth[0]['date']->dayOfWeek;
-                    $daysInMonthIndex = 0;
-                } else {
-                     $dayOfWeek = 0; // 日曜日 (0) など、適切な値を設定
-                    $daysInMonthIndex = 0;
-                }
+                $dayOfWeek = $daysInMonth[0]['date']->dayOfWeek; // 月初の日の曜日
             @endphp
             <tr>
                 @for ($i = 0; $i < $dayOfWeek; $i++) 
@@ -60,20 +44,26 @@
                 @endfor
 
                 @foreach ($daysInMonth as $day)
-                    <td>
-                        <strong>{{ $day['date']->day }}</strong><br>
+                    @php
+                        $dayClass = '';
+                        if ($day['date']->dayOfWeek === 0) {
+                            $dayClass = 'sunday'; // 日曜日
+                        } elseif ($day['date']->dayOfWeek === 6) {
+                            $dayClass = 'saturday'; // 土曜日
+                        }
+                    @endphp
 
-                        @foreach ($day['lessons'] as $lesson)
-                            <p>
-                                @if ($lesson->day1 === $day['date']->format('l'))
-                                    {{ $lesson->lesson_value1 }} <!-- day1 に対応する lesson_value1 -->
-                                @elseif ($lesson->day2 === $day['date']->format('l'))
-                                    {{ $lesson->lesson_value2 }} <!-- day2 に対応する lesson_value2 -->
+                    <td class="{{ $dayClass }}">
+                        <strong>{{ $day['date']->day }}</strong><br>
+                            @foreach($day['lessons'] as $lesson)
+                                @if ($lesson->day1 === $day['date']->isoFormat('ddd'))
+                                    <p class="value">{{ $lesson->lesson_value1 }}</p><!-- day1 に対応する <lesson_value1 -->
+                                @elseif ($lesson->day2 === $day['date']->isoFormat('ddd'))
+                                    <P class="value">{{ $lesson->lesson_value2 }}</P> <!-- day2 に対応する lesson_value2 -->
                                 @else
-                                    休校
+                                    <p>休校</p>
                                 @endif
-                            </p>
-                        @endforeach
+                            @endforeach
                     </td>
 
                     @php
@@ -92,7 +82,7 @@
         </tbody>
     </table>
     <div class="back__button">
-        <a href="/schedule">back</a>
+        <a class="back" href="/schedule">back</a>
     </div>
 </div>
 @endsection

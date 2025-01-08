@@ -57,7 +57,6 @@ class StatusController extends Controller
                     $currentDate = Carbon::parse($startDate)->next($dayMap[$lesson->day1]);
                 } else {
                 // 不正な曜日の場合の処理
-                 // 例: エラーメッセージの表示、またはデフォルト値を使う
                     $currentDate = Carbon::parse($startDate);
                 }
 
@@ -67,6 +66,8 @@ class StatusController extends Controller
                         'day' => $lesson->day1,
                         'start_time' => Carbon::parse($lesson->start_time1)->format('H:i'),
                         'lesson_value' => $lesson->lesson_value1,
+                        'lesson_id' => $lesson->id,
+                        'user_lesson_id' => optional($lesson->pivot)->id,
                     ];
                     $currentDate->addWeek(); // 次の週に進む
                 }
@@ -81,6 +82,7 @@ class StatusController extends Controller
                         'day' => $lesson->day2,
                         'start_time' => Carbon::parse($lesson->start_time2)->format('H:i'),
                         'lesson_value' => $lesson->lesson_value2,
+                        'user_lesson_id' => optional($lesson->pivot)->id,
                     ];
                     $currentDate->addWeek();
                 }
@@ -109,43 +111,71 @@ class StatusController extends Controller
         $lesson = Lesson::find($lessonId);
 
         $currentDate = Carbon::now();
-        $previousMonth = $currentDate->copy()->subMonth();
-        $nextMonth = $currentDate->copy()->addMonth();
+        $startOfPreviousMonth = $currentDate->copy()->subMonth()->startOfMonth();
+        $endOfNextMonth = $currentDate->copy()->addMonth()->endOfMonth();
 
         $userLessons = UserLesson::where('user_id', $userId)
-            ->whereHas('lesson', function ($query) use ($schoolId, $classId, $lessonId) {
-            $query->where('school_id', $schoolId)
+            ->whereHas('lesson', function ($query) use ($schoolId, $classId, $lessonId, $startOfPreviousMonth, $endOfNextMonth) {
+                $query->where('school_id', $schoolId)
                     ->where('class_id', $classId)
-                    ->where('id', $lessonId); // 指定されたレッスンIDでフィルタリング
+                    ->where('id', $lessonId) // 指定されたレッスンIDでフィルタリング
+                    ->whereBetween('date', [$startOfPreviousMonth, $endOfNextMonth]);
             })
             ->with('lesson')
             ->get();
-        $lessons = $userLessons->pluck('lesson')->filter()->all();
-        $lessonsByDate = $this->generateLessonDates($lessons, $previousMonth, $nextMonth);
 
-        foreach ($lessonsByDate as &$lesson) {
-        // 授業開始時間をCarbonインスタンスに変換
-        $lessonDate = Carbon::parse($lesson['date']->toDateString() . ' ' . $lesson['start_time']);
-        $now = Carbon::now();
-        // 授業が現在時刻より前か後かを判定
-        if ($lessonDate->isPast()) {
-        // 授業が終了した場合は受講済み
-            $lesson['status'] = '受講済み';
-        } elseif ($lessonDate->isToday()) {
-        // 授業が今日の場合
-            if ($now->greaterThanOrEqualTo($lessonDate)) {
-            // 授業開始時間より後であれば未受講
-                $lesson['status'] = '未受講';
-            } else {
-            // 授業開始時間前であれば受講済み
-                $lesson['status'] = '受講済み';
-            }
-        } else {
-        // 授業が未来の場合
-            $lesson['status'] = '未受講';
-        }
+        $lessonsByDate = $userLessons->map(function ($userLesson) {
+            $lesson = $userLesson->lesson;
+            $lessonDate = Carbon::parse($lesson->date); // レッスン日付
+            $now = Carbon::now();
+
+            return [
+                'date' => $lessonDate,
+                'start_time' => $lesson->start_time,
+                'day' => $lessonDate->isoFormat('ddd'),
+                'status' => $lessonDate->isPast() ? '受講済み' : '欠席可能',
+                'userLessons' => $userLesson, // UserLesson を保持
+            ];
+    });
+
+
+        return view('status_list', compact('user', 'school', 'class', 'lessonsByDate', 'schoolId', 'classId', 'startOfPreviousMonth', 'endOfNextMonth', 'lesson', 'userLessons'));
     }
 
-        return view('status_list', compact('user', 'school', 'class','lessonsByDate', 'schoolId', 'classId', 'previousMonth', 'nextMonth', 'lesson'));
+    public function confirmAbsence(Request $request)
+    {
+        $userId = auth()->id();
+        $userLessonId = $request->input('user_lesson_id');
+        $userLesson = UserLesson::where('user_id', $userId)
+            ->where('id', $userLessonId)
+            ->firstOrFail();
+        $lesson = $userLesson->lesson;
+
+        return view('status_update', compact('lesson', 'userLesson'));
     }
+
+    public function storeAbsence(Request $request)
+    {
+        $request->validate([
+            'user_lesson_id' => 'required|exists:user_lessons,id',
+        ]);
+
+        $userId = auth()->id();
+        $userLessonId = $request->input('user_lesson_id');
+        $userLesson = UserLesson::where('user_id', $userId)
+            ->where('id', $userLessonId)
+            ->firstOrFail();
+        $lesson = $userLesson->lesson;
+
+        // 欠席ステータスを更新
+        $userLesson->status = '欠席';
+        $userLesson->save();
+
+        return redirect()->route('status.list', [
+            'school_id' => $userLesson->lesson->school_id,
+            'class_id' => $userLesson->lesson->class_id,
+        ])->with('success', '欠席が確定しました。');
+    }
+
+
 }

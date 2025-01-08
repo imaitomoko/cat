@@ -39,9 +39,15 @@ class Lesson extends Model
     public function users()
     {
         return $this->belongsToMany(User::class, 'user_lessons', 'lesson_id', 'user_id')
-                    ->withPivot('status')
+                    ->withPivot('id', 'status')
                     ->withTimestamps();
     }
+
+    public function userLessons()
+    {
+        return $this->hasMany(UserLesson::class, 'lesson_id');
+    }
+
 
     public function setYearAttribute($value)
     {

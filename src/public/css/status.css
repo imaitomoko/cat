@@ -21,9 +21,11 @@
 
 .user {
     text-align: center;
-    margin: 0 auto;
+    margin: 20px auto;
     width: 40%;
-    border-bottom: #808080 1px solid;
+    border: blue 1px solid;
+    border-radius: 5px;
+    background-color: aliceblue;
 }
 
 .user_inner {
@@ -38,7 +40,7 @@
     font-size: 20px;
     text-align: center;
     padding: 5px;
-    color: #4f4c4c;
+    color: blue;
 }
 
 .back__button {

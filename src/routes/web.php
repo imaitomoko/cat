@@ -21,8 +21,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/mail', [MailRegisterController::class, 'index']);
     Route::post('/update-email', [MailRegisterController::class, 'updateEmail']);
     Route::get('/schedule', [ScheduleController::class, 'index']);
-    Route::post('/schedule/list', [ScheduleController::class, 'search']);
+    Route::get('/schedule/list', [ScheduleController::class, 'show'])->name('schedule.list');
     Route::get('/schedule/search', [ScheduleController::class, 'search'])->name('schedule.search');
     Route::get('/status', [StatusController::class, 'index']);
     Route::get('status/list', [StatusController::class, 'show'])->name('status.list');
+    Route::post('/status/absence/confirm', [StatusController::class, 'confirmAbsence'])->name('status.absence.confirm');
+    Route::post('/status/absence/store', [StatusController::class, 'storeAbsence'])->name('status.absence.store');
+
 });
