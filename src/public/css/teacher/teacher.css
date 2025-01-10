@@ -1,0 +1,53 @@
+.content {
+    margin: 0 auto;
+    padding: 20px 15px;
+    max-width: 760px;
+}
+
+.heading {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+h2 {
+    color: #4f4c4c;
+}
+
+.teacher__info {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.teacher_name {
+    margin: 0 20px;
+    color: #4f4c4c;
+}
+
+.menu {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 50px;
+    margin: 40px auto;
+    text-align: center;
+    width: 60%;
+    background-color: #f9f9f9;
+}
+
+.menu__button {
+    text-align: center;
+    width: 90%;
+    padding: 10px;
+    background-color: #007bff;
+    border-radius: 5px;
+    margin: 30px auto;
+}
+
+.menu__item {
+    font-size: 18px;
+    font-weight: bold;
+    color: #fff;
+    text-align: center;
+    align-items: center;
+    text-decoration: none;
+    width: 100%;
+}

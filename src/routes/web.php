@@ -5,6 +5,8 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MailRegisterController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\StatusController;
+use App\Http\Controllers\TeacherAuthController;
+use App\Http\Controllers\TeacherScheduleController;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,3 +31,16 @@ Route::middleware('auth')->group(function () {
     Route::post('/status/absence/store', [StatusController::class, 'storeAbsence'])->name('status.absence.store');
 
 });
+
+Route::prefix('teacher')->group(function () {
+    Route::get('/login', [TeacherAuthController::class, 'showLoginForm'])->name('teacher.login');
+    Route::post('/login', [TeacherAuthController::class, 'login'])->name('teacher.login.submit');
+});
+
+Route::middleware(['auth:teacher'])->group(function () {
+    Route::get('/teacher', [TeacherAuthController::class, 'index'])->name('teacher.teacher');
+    Route::get('/search',[TeacherScheduleController::class, 'showForm'])->name('teacher.search');
+    Route::post('/search/result', [TeacherScheduleController::class, 'result'])->name('teacher.search.result');
+    Route::get('/schedule/list', [TeacherScheduleController::class, 'result'])->name('schedule.list');
+});
+
