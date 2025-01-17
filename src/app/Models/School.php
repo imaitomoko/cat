@@ -11,6 +11,7 @@ class School extends Model
 
     protected $fillable = [
         'school_name',
+        'en_school_name',
     ];
 
     public function lessons()

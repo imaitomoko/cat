@@ -17,7 +17,7 @@
                 <select name="school_id" id="school_id" required>
                     <option value="">choose school</option>
                         @foreach ($schools as $school)
-                    <option value="{{ $school->id }}">{{ $school->school_name }}</option>
+                    <option value="{{ $school->id }}">{{ $school->en_school_name }}</option>
                         @endforeach
                 </select>
             </div>

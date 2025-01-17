@@ -7,6 +7,10 @@ use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\StatusController;
 use App\Http\Controllers\TeacherAuthController;
 use App\Http\Controllers\TeacherScheduleController;
+use App\Http\Controllers\TeacherClassController;
+use App\Http\Controllers\AdminAuthController;
+use App\Http\Controllers\TeacherController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -37,10 +41,25 @@ Route::prefix('teacher')->group(function () {
     Route::post('/login', [TeacherAuthController::class, 'login'])->name('teacher.login.submit');
 });
 
+Route::prefix('admin')->group(function () {
+    Route::get('/login', [AdminAuthController::class, 'showLoginForm'])->name('admin.login');
+    Route::post('/login', [AdminAuthController::class, 'login'])->name('admin.login.submit');
+});
+
 Route::middleware(['auth:teacher'])->group(function () {
     Route::get('/teacher', [TeacherAuthController::class, 'index'])->name('teacher.teacher');
     Route::get('/search',[TeacherScheduleController::class, 'showForm'])->name('teacher.search');
     Route::post('/search/result', [TeacherScheduleController::class, 'result'])->name('teacher.search.result');
-    Route::get('/schedule/list', [TeacherScheduleController::class, 'result'])->name('schedule.list');
+    Route::get('/month/list', [TeacherScheduleController::class, 'result'])->name('month.list');
+    Route::get('/classSearch', [TeacherClassController::class, 'search'])->name('teacher.classSearch');
+    Route::get('/classSearch/{date}', [TeacherClassController::class, 'search'])->name('teacher.classSearch.date');
+
+});
+
+Route::middleware(['auth:admin'])->group(function () {
+    Route::get('/admin', [AdminAuthController::class, 'index'])->name('admin.admin');
+    Route::get('/admin/admin.teacher', [TeacherController::class, 'index'])->name('admin.admin_teacher');
+    Route::resource('teachers', TeacherController::class);
+    Route::get('/admin/teacher.register', [TeacherController::class, 'create'])->name('admin.teacher_register');
 });
 

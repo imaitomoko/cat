@@ -7,10 +7,10 @@
 @section('content')
 
 <div class="calendar">
-    <h2> {{ $school->school_name }}   {{ $class->class_name }}</h2>
+    <h2> {{ $school->en_school_name }}   {{ $class->class_name }}</h2>
     <div class="month-navigation">
         <!-- 前月ボタン -->
-        <a class="month_change" href="{{ route('schedule.list', ['school_id' => $school->id, 'class_id' => $class->id, 'month' => $previousMonth->month]) }}">
+        <a class="month_change" href="{{ route('month.list', ['school_id' => $school->id, 'class_id' => $class->id, 'month' => $previousMonth->month]) }}">
             << Previous month
         </a>
 
@@ -18,7 +18,7 @@
         <span class="month">{{ $startOfMonth->format('Y/m') }}</span>
 
         <!-- 翌月ボタン -->
-        <a class="month_change" href="{{ route('schedule.list', ['school_id' => $school->id, 'class_id' => $class->id, 'month' => $nextMonth->month]) }}">
+        <a class="month_change" href="{{ route('month.list', ['school_id' => $school->id, 'class_id' => $class->id, 'month' => $nextMonth->month]) }}">
             Next month >>
         </a>
     </div>

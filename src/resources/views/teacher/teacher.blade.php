@@ -15,7 +15,7 @@
     @auth('teacher')
     <div class="menu">
         <div class="menu__button">
-            <a class="menu__item" href="">Attendant</a>
+            <a class="menu__item" href="{{ route('teacher.classSearch') }}">Attendant</a>
         </div>
         <div class="menu__button">
             <a class="menu__item" href="{{ route('teacher.search') }}">Schedule</a>
