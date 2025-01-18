@@ -33,7 +33,7 @@
             <a class="master-menu__item" href="{{ route('admin.admin_teacher') }}">講師管理</a>
         </div>
         <div class="master-menu__button">
-            <a class="master-menu__item" href="">お知らせ管理</a>
+            <a class="master-menu__item" href="{{ route('admin.notice') }}">お知らせ管理</a>
         </div>
     </div>
     @endauth

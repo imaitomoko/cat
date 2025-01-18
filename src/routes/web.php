@@ -10,6 +10,7 @@ use App\Http\Controllers\TeacherScheduleController;
 use App\Http\Controllers\TeacherClassController;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\TeacherController;
+use App\Http\Controllers\NoticeController;
 
 
 /*
@@ -61,5 +62,7 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('/admin/admin.teacher', [TeacherController::class, 'index'])->name('admin.admin_teacher');
     Route::resource('teachers', TeacherController::class);
     Route::get('/admin/teacher.register', [TeacherController::class, 'create'])->name('admin.teacher_register');
+    Route::get('admin/notice', [NoticeController::class, 'index'])->name('admin.notice');
+    Route::resource('notices', NoticeController::class);
 });
 

@@ -10,6 +10,6 @@ class NewsList extends Model
     use HasFactory;
 
     protected $fillable = [
-        'news_list',
+        'news_list'
     ];
 }
