@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('lesson_id', 10)->unique();
             $table->integer('year');
             $table->foreignId('school_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('class_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('class_id')->constrained('classes')->cascadeOnDelete();
             $table->string('day1', 10);
             $table->time('start_time1');
             $table->integer('duration1');

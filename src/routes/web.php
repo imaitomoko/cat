@@ -11,6 +11,9 @@ use App\Http\Controllers\TeacherClassController;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\TeacherController;
 use App\Http\Controllers\NoticeController;
+use App\Http\Controllers\LessonController;
+use App\Http\Controllers\MasterController;
+use App\Http\Controllers\StudentController;
 
 
 /*
@@ -64,5 +67,38 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('/admin/teacher.register', [TeacherController::class, 'create'])->name('admin.teacher_register');
     Route::get('admin/notice', [NoticeController::class, 'index'])->name('admin.notice');
     Route::resource('notices', NoticeController::class);
+    
+    Route::prefix('admin/lesson')->name('admin.lesson.')->group(function () {
+        Route::get('/', [LessonController::class, 'index'])->name('index');
+        Route::get('/search', [LessonController::class, 'search'])->name('search');
+        Route::get('/show', [LessonController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [LessonController::class, 'edit'])->name('edit'); // 編集用ルート
+        Route::put('/{id}', [LessonController::class, 'update'])->name('update'); 
+        Route::delete('/{id}', [LessonController::class, 'destroy'])->name('destroy');
+        Route::post('/bulk-delete', [LessonController::class, 'bulkDelete'])->name('bulkDelete');
+        Route::get('/create', [LessonController::class, 'create'])->name('create');
+        Route::post('/store', [LessonController::class, 'store'])->name('store');
+        Route::post('/update-year', [LessonController::class, 'updateYear'])->name('update-year');
+    });
+
+    Route::prefix('admin/master')->name('admin.master.')->group(function () {
+        Route::get('/', [MasterController::class, 'index'])->name('index');
+        Route::post('/schools', [MasterController::class, 'storeSchool'])->name('schools.store');
+        Route::post('/classes', [MasterController::class, 'storeClass'])->name('classes.store');
+        Route::delete('/schools/{id}', [MasterController::class, 'destroySchool'])->name('schools.destroy');
+        Route::delete('/classes/{id}', [MasterController::class, 'destroyClass'])->name('classes.destroy');
+    });
+
+    Route::prefix('admin/student')->name('admin.student.')->group(function () {
+        Route::get('/', [StudentController::class, 'index'])->name('index');
+        Route::get('/create', [StudentController::class, 'create'])->name('create');
+        Route::post('/store', [StudentController::class, 'store'])->name('store');
+    });
+
+
+
+
+
+
 });
 

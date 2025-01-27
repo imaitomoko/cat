@@ -1,0 +1,194 @@
+.content {
+    margin: 0 auto;
+    padding: 0 15px;
+    max-width: 1000px;
+}
+
+.heading {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+h2 {
+    color: #4f4c4c;
+}
+
+.alert alert-success {
+    color: #28a745;
+    margin: 0 auto;
+}
+
+/* テーブル全体のスタイル */
+.table {
+    width: 90%;
+    margin: 0 auto;
+    border-collapse: collapse;
+    /* ボーダーの隙間をなくす */
+    margin-top: 10px;
+    font-size: 14px;
+    color: #4f4c4c;
+}
+
+/* テーブルヘッダー */
+.table thead th {
+    background-color: #007bff;
+    color: #fff;
+    text-align: center;
+    padding: 5px;
+    border-bottom: 2px solid #dee2e6;
+    /* 下線を強調 */
+    font-weight: bold;
+}
+
+/* テーブルボディ */
+.table tbody td {
+    padding: 8px 10px;
+    /* セル内の余白 */
+    border-bottom: 1px solid #dee2e6;
+    text-align: center;
+    /* 下線 */
+}
+
+.name {
+    text-align: left;
+}
+
+/* 奇数行の背景色 */
+.table tbody tr:nth-child(odd) {
+    background-color: #f9f9f9;
+    /* 薄いグレー背景 */
+}
+
+/* 偶数行の背景色 */
+.table tbody tr:nth-child(even) {
+    background-color: #ffffff;
+    /* 白背景 */
+}
+
+/* 操作ボタンのスタイル */
+.table .btn-danger {
+    background-color: #dc3545;
+    border: none;
+    color: #fff;
+    font-weight: bold;
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+/* ボタンホバー時の効果 */
+.table .btn-danger:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+}
+
+.mb-5 {
+    margin: 10px auto;
+    max-width: 800px;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background-color: #f9f9f9;
+}
+
+h3 {
+    text-align: center;
+    color: #4f4c4c;
+}
+
+.form {
+    display: flex;
+    width: 90%;
+    justify-content: space-between;
+    margin: 20px auto;
+    padding: 10px 30px;
+    background-color: #ccc;
+    border-radius: 3px;
+}
+
+.form-group {
+    display: flex;
+    gap: 20px;
+}
+
+input {
+    border-radius: 3px;
+    border: 1px solid #ccc;
+}
+
+.register_button {
+    padding: 3px 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #28a745;
+    color: #fff;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+/* ページネーションの全体スタイル */
+.pagination {
+    display: flex;
+    justify-content: center;
+    padding: 0;
+    margin: 15px 0;
+    list-style: none;
+    font-size: 12px;
+    /* 文字サイズを小さく */
+}
+
+/* ページネーションの各リンク */
+.pagination .page-item {
+    margin: 0 3px;
+    /* 各リンクの間隔を狭く */
+}
+
+.pagination .page-link {
+    color: #007bff;
+    text-decoration: none;
+    padding: 4px 8px;
+    /* コンパクトなパディング */
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    transition: background-color 0.2s;
+}
+
+/* ホバー時の背景色変更 */
+.pagination .page-link:hover {
+    background-color: #f1f1f1;
+}
+
+/* 現在のページのスタイル */
+.pagination .active .page-link {
+    background-color: #007bff;
+    color: #fff;
+    border-color: #007bff;
+}
+
+.back__button {
+    text-align: center;
+    align-items: center;
+    position: fixed;
+    bottom: 60px;
+    width: 100px;
+    padding: 5px;
+    height: 35px;
+    border: none;
+    border-radius: 3px;
+    background: #808080;
+    cursor: pointer;
+    font-size: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.back {
+    color: #fff;
+    text-decoration: none;
+}
+
+

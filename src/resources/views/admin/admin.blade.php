@@ -24,10 +24,10 @@
     </div>
     <div class="menu">
         <div class="master-menu__button">
-            <a class="master-menu__item" href="">レッスン管理</a>
+            <a class="master-menu__item" href="{{ route('admin.lesson.index') }}">レッスン管理</a>
         </div>
         <div class="master-menu__button">
-            <a class="master-menu__item" href="">生徒管理</a>
+            <a class="master-menu__item" href="{{ route('admin.student.index') }}">生徒管理</a>
         </div>
         <div class="master-menu__button">
             <a class="master-menu__item" href="{{ route('admin.admin_teacher') }}">講師管理</a>
