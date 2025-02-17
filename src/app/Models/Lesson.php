@@ -40,7 +40,7 @@ class Lesson extends Model
     public function users()
     {
         return $this->belongsToMany(User::class, 'user_lessons', 'lesson_id', 'user_id')
-                    ->withPivot('id', 'status')
+                    ->withPivot('status', 'end_date', 'status')
                     ->withTimestamps();
     }
 

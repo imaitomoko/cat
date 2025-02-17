@@ -22,7 +22,7 @@
             <a class="menu__item" href="{{ route('admin.student.create') }}">生徒新規登録</a>
         </div>
         <div class="menu__button">
-            <a class="menu__item" href="{{ route('admin.lesson.search') }}">生徒一覧・編集</a>
+            <a class="menu__item" href="{{ route('admin.student.search') }}">生徒一覧・編集</a>
         </div>
     </div>
     <div class="menu">

@@ -20,6 +20,7 @@ class User extends Authenticatable
     protected $fillable = [
         'user_name',
         'user_id',
+        'email',
         'password',
     ];
 
@@ -47,7 +48,12 @@ class User extends Authenticatable
     public function lessons()
     {
         return $this->belongsToMany(Lesson::class, 'user_lessons', 'user_id', 'lesson_id')
-                    ->withPivot('id', 'status')
+                    ->withPivot('status', 'end_date', 'status')
                     ->withTimestamps();
+    }
+
+    public function userLessons()
+    {
+        return $this->hasMany(UserLesson::class, 'user_id');
     }
 }

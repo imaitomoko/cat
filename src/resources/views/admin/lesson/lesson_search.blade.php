@@ -14,7 +14,14 @@
         <form action="{{ route('admin.lesson.show') }}" method="GET" class="mb-4">
             <div class="form-group">
                 <label for="year">年度:</label>
-                <input type="number" id="year" name="year" class="form-control" placeholder="例: 2023" value="{{ request('year') }}">
+                <select id="year" name="year" class="form-control">
+                    <option value="">選択してください</option>
+                    @foreach($years as $year)
+                        <option value="{{ $year }}" {{ request('year') == $year ? 'selected' : '' }}>
+                            {{ $year }}
+                        </option>
+                    @endforeach
+                </select>
             </div>
 
             <div class="form-group">
@@ -77,11 +84,8 @@
             {{ $lessons->links() }}
         </div>
         <div class="btn_menu">
-            <form action="{{ route('admin.lesson.bulkDelete') }}" method="POST" class="mb-4">
-            @csrf
-                <button type="submit" class="btn btn-danger">一括削除</button>
-            </form>
             <a class="btn register" href="{{ route('admin.lesson.create') }}">レッスン新規登録</a>
+            <a href="{{ route('admin.lesson.pdf') }}" class="btn btn-secondary" target="_blank">PDFを印刷</a>
         </div>
 
     @elseif(isset($lessons))

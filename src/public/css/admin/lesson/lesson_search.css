@@ -172,6 +172,11 @@ p {
     color: white;
 }
 
+.btn-secondary {
+    background-color: #ddd;
+    color: #c82333;
+}
+
 .pagination {
     display: flex;
     justify-content: center;

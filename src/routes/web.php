@@ -75,10 +75,10 @@ Route::middleware(['auth:admin'])->group(function () {
         Route::get('/{id}/edit', [LessonController::class, 'edit'])->name('edit'); // 編集用ルート
         Route::put('/{id}', [LessonController::class, 'update'])->name('update'); 
         Route::delete('/{id}', [LessonController::class, 'destroy'])->name('destroy');
-        Route::post('/bulk-delete', [LessonController::class, 'bulkDelete'])->name('bulkDelete');
+        Route::get('/pdf', [LessonController::class, 'generatePDF'])->name('pdf');
         Route::get('/create', [LessonController::class, 'create'])->name('create');
         Route::post('/store', [LessonController::class, 'store'])->name('store');
-        Route::post('/update-year', [LessonController::class, 'updateYear'])->name('update-year');
+        Route::post('/update-next-year', [LessonController::class, 'updateNextYear'])->name('updateNextYear');
     });
 
     Route::prefix('admin/master')->name('admin.master.')->group(function () {
@@ -93,6 +93,11 @@ Route::middleware(['auth:admin'])->group(function () {
         Route::get('/', [StudentController::class, 'index'])->name('index');
         Route::get('/create', [StudentController::class, 'create'])->name('create');
         Route::post('/store', [StudentController::class, 'store'])->name('store');
+        Route::get('/search', [StudentController::class, 'search'])->name('search');
+        Route::get('/show', [studentController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [StudentController::class, 'edit'])->name('edit'); 
+        Route::put('/{id}', [StudentController::class, 'update'])->name('update'); 
+        Route::delete('/{userId}/destroy-all', [StudentController::class, 'destroyAll'])->name('destroyAll');
     });
 
 

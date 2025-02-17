@@ -7,6 +7,9 @@ use App\Models\Lesson;
 use App\Models\School;
 use App\Models\SchoolClass;
 use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\DB;
+
 
 class LessonController extends Controller
 {
@@ -18,7 +21,9 @@ class LessonController extends Controller
     public function search()
     {
         $schools = School::all(); // セレクトボックスに表示する教室
-        return view('admin.lesson.lesson_search', compact('schools'));
+        $years = Lesson::select('year')->distinct()->orderBy('year', 'desc')->pluck('year'); // 年度一覧を取得
+
+        return view('admin.lesson.lesson_search', compact('schools', 'years'));
     }
 
     public function show(Request $request)
@@ -36,6 +41,11 @@ class LessonController extends Controller
 
         $lessons = $lessons->paginate(8);  // 8件ごとに表示
 
+        session([
+            'search_year' => $request->year,
+            'search_school_id' => $request->school_id
+        ]);
+
 
         foreach ($lessons as $lesson) {
         if ($lesson->start_time1) {
@@ -47,8 +57,35 @@ class LessonController extends Controller
     }
 
         $schools = School::all(); // 検索フォームの教室選択用
+        $years = Lesson::select('year')->distinct()->orderBy('year', 'desc')->pluck('year'); // 年度の取得
 
-        return view('admin.lesson.lesson_search', compact('lessons', 'schools'));
+        return view('admin.lesson.lesson_search', compact('lessons', 'schools', 'years'));
+    }
+
+    public function generatePDF(Request $request)
+    {
+        $year = session('search_year');
+        $school_id = session('search_school_id');
+
+        // レッスン情報を取得（検索条件に応じてフィルタリング）
+        $lessons = Lesson::query();
+
+        if (!empty($year)) {
+            $lessons->where('year', $year);
+        }
+
+        if (!empty($school_id)) {
+            $lessons->where('school_id', $school_id);
+        }
+
+        $lessons = $lessons->get();
+
+        // PDF のビューを作成
+        $pdf = Pdf::loadView('admin.lesson.pdf', compact('lessons'));
+
+        // PDF をダウンロードまたは表示
+        return $pdf->stream('lesson_list.pdf'); // 画面に表示
+        // return $pdf->download('lesson_list.pdf'); // ダウンロード
     }
 
     public function edit($id)
@@ -159,42 +196,59 @@ class LessonController extends Controller
         return redirect()->route('admin.lesson.index')->with('success', 'レッスンを登録しました。');
     }
 
-    public function updateYear()
+    public function updateNextYear(Request $request)
     {
-    // 最新の年次データを取得
-        $currentYear = now()->year;
+         // 現在の年度を取得
+        $currentYear = Lesson::max('year');
 
-    // 過去のデータ（2年以上前のデータ）を削除
-        Lesson::where('year', '<', $currentYear - 1)->delete();
-
-    // 年次更新の対象を取得
-        $lessons = Lesson::all();
-
-        foreach ($lessons as $lesson) {
-        // 新しい年次データを生成
-            $newYear = $lesson->year + 1;
-            $suffix = substr($lesson->lesson_id, 4); // 'MMI' 部分を取得
-            $newLessonId = $newYear . $suffix;
-
-        // 新しいレコードを作成
-            Lesson::create([
-                'lesson_id' => $newLessonId,
-                'year' => $newYear,
-                'school_id' => $lesson->school_id, 
-                'class_id' => $lesson->class_id,
-                'day1' => $lesson->day1,
-                'start_time1' => $lesson->start_time1,
-                'duration1' => $lesson->duration1,
-                'lesson_value1' => $lesson->lesson_value1,
-                'day2' => $lesson->day2,
-                'start_time2' => $lesson->start_time2,
-                'duration2' => $lesson->duration2,
-                'lesson_value2' => $lesson->lesson_value2,
-                'max_number' => $lesson->max_number,
-            ]);
+        if (!$currentYear) {
+            return redirect()->back()->with('error', 'データがありません');
         }
 
-        return redirect()->back()->with('success', '年次更新が完了しました！');
-    }
+        $nextYear = $currentYear + 1;
+        $previousYear = $currentYear - 1; 
 
+        // 確認メッセージ
+        if (!$request->has('confirm')) {
+            return redirect()->back()->with('confirm', "{$nextYear}年のデータを作成しますか？");
+        }
+
+        DB::beginTransaction();
+
+        try {
+            // 新しいデータを作成
+            $newLessons = Lesson::where('year', $currentYear)->get()->map(function ($lesson) use ($nextYear) {
+                return [
+                    'year'          => $nextYear,
+                    'lesson_id'     => preg_replace('/(\d{4})/', $nextYear, $lesson->lesson_id, 1), // 年の部分だけ置換
+                    'school_id'     => $lesson->school_id,
+                    'class_id'      => $lesson->class_id,
+                    'day1'          => $lesson->day1,
+                    'start_time1'   => $lesson->start_time1,
+                    'duration1'     => $lesson->duration1,
+                    'lesson_value1' => $lesson->lesson_value1,
+                    'day2'          => $lesson->day2,
+                    'start_time2'   => $lesson->start_time2,
+                    'duration2'     => $lesson->duration2,
+                    'lesson_value2' => $lesson->lesson_value2,
+                    'max_number'    => $lesson->max_number,
+                    'created_at'    => now(),
+                    'updated_at'    => now(),
+                ];
+            })->toArray();
+
+            // 一括挿入
+            Lesson::insert($newLessons);
+
+            // 一つ前の年のデータを削除
+            Lesson::where('year', $previousYear)->delete();
+
+            DB::commit();
+        
+            return redirect()->back()->with('success', "{$nextYear}年のデータを作成しました。{$previousYear}年のデータを削除しました。");
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'データ作成に失敗しました: ' . $e->getMessage());
+        }
+    }
 }

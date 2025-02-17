@@ -13,6 +13,11 @@ h2 {
     color: #4f4c4c;
 }
 
+.alert-success {
+    text-align: center;
+    color: green;
+}
+
 .menu {
     border: 1px solid #ddd;
     border-radius: 8px;

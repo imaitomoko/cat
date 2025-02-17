@@ -26,7 +26,7 @@
             @enderror
         </div>
         <div class="form-group">
-            <label for="user_name">メールアドレス:</label>
+            <label for="email">メールアドレス:</label>
             <input type="email" id="email" name="email" class="form-control" value="{{ old('email') }}">
             @error('email')
             <div class="text-danger">{{ $message }}</div>
@@ -58,7 +58,10 @@
                 </div>
             </div>
         </div>
-        <button type="button" id="add-lesson" class="btn btn-secondary">レッスンを追加</button>
+        <div class="add_lesson">
+            <a id="add-lesson" class="double-underline">レッスンを追加</a>
+        </div>
+
         <button type="submit" class="btn btn-primary">登録</button>
     </form>
     <div class="back__button">

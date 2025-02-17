@@ -61,6 +61,18 @@ select {
     margin-top: 5px;
 }
 
+.add_lesson {
+    text-align: center;
+    padding: 5px;
+}
+
+.double-underline{
+    cursor: pointer;
+    font-weight: bold;
+    color: blue;
+    border-bottom: 2px double blue;
+}
+
 button {
     margin-top: 20px;
     width: 100%;

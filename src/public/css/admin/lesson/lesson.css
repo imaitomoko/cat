@@ -13,6 +13,12 @@ h2 {
     color: #4f4c4c;
 }
 
+.alert {
+    text-align: center;
+}
+
+
+
 .menu {
     border: 1px solid #ddd;
     border-radius: 8px;
@@ -42,6 +48,27 @@ h2 {
     text-decoration: none;
     width: 100%;
 }
+
+.menu__button-year {
+    text-align: center;
+    width: 90%;
+    padding: 10px;
+    background-color: #00d0ff;
+    border-radius: 5px;
+    margin: 30px auto;
+}
+
+.btn-custom {
+    background-color: #00d0ff;
+    color: white;
+    font-weight: bold;
+    border: none;
+    font-size: 18px;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+}
+
 
 .master-menu__button {
     text-align: center;

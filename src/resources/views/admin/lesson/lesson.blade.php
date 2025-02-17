@@ -10,6 +10,24 @@
         <h2>レッスン管理</h2>
     </div>
 
+    @if(session('error'))
+        <div class="alert alert-danger">
+            {{ session('error') }}
+        </div>
+    @endif
+
+    @if(session('confirm'))
+        <div class="alert alert-warning">
+            <form action="{{ route('admin.lesson.updateNextYear') }}" method="POST">
+                @csrf
+                <p>{{ session('confirm') }}</p>
+                <input type="hidden" name="confirm" value="1">
+                <button type="submit" class="btn btn-warning">はい</button>
+                <a href="{{ url()->previous() }}" class="btn btn-secondary">キャンセル</a>
+            </form>
+        </div>
+    @endif
+
     @if(session('success'))
     <div class="alert alert-success">
         {{ session('success') }}
@@ -24,8 +42,11 @@
         <div class="menu__button">
             <a class="menu__item" href="{{ route('admin.lesson.search') }}">レッスン一覧・編集</a>
         </div>
-        <div class="menu__button">
-            <a class="menu__item" href="{{ route('admin.lesson.update-year') }}">年次更新レッスン登録</a>
+        <div class="menu__button-year">
+            <form action="{{ route('admin.lesson.updateNextYear') }}" method="POST">
+                @csrf
+                <button type="submit" class="btn btn-custom">翌年のデータを作成</button>
+            </form>
         </div>
     </div>
     <div class="menu">
@@ -38,4 +59,5 @@
     </div>
     @endauth
 </div>
+
 @endsection
