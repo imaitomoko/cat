@@ -176,7 +176,83 @@ class StudentController extends Controller
         }
 
         return redirect()->route('admin.student.index')->with('success', 'レッスン情報が更新されました。');
+    }
 
+    public function showNextYear()
+    {
+        $years = Lesson::pluck('year')->unique();
+        $schools = School::all();
+        $classes = SchoolClass::all(); 
+        $students = collect(); // 初回表示時は空
+        $lessons = Lesson::all();
+
+        return view('admin.student.student_next_year', compact('years','schools', 'classes', 'students', 'lessons'));
+    }
+
+
+    public function searchStudent(Request $request)
+    {
+        // 検索条件を取得
+        $year = $request->input('year');
+        $school_id = $request->input('school_id');
+        $class_id = $request->input('class_id');
+
+        // 条件に合うレッスンを取得
+        $lessons = Lesson::where('year', $year)
+                        ->where('school_id', $school_id)
+                        ->where('class_id', $class_id)
+                        ->get();
+
+       // 条件に合う生徒を取得
+        $students = UserLesson::whereIn('lesson_id', $lessons->pluck('id'))
+                            ->with('user', 'lesson')
+                            ->get();
+
+        $years = Lesson::pluck('year')->unique();
+        $schools = School::all();
+        $classes = SchoolClass::all();
+
+        return view('admin.student.student_next_year', compact(
+            'years', 'schools', 'classes', 'students', 'lessons', 'year', 'school_id', 'class_id'
+        ));
+    }
+
+
+    public function storeStudent(Request $request)
+    {
+        $request->validate([
+            'selected_students' => 'required|array',
+            'new_year' => 'required',
+            'new_school_id' => 'required',
+            'new_class_id' => 'required',
+            'new_day' => 'required'
+        ]);
+
+        // 新しい `lesson_id` を取得
+        $lesson = Lesson::where('year', $request->new_year)
+            ->where('school_id', $request->new_school_id)
+            ->where('class_id', $request->new_class_id)
+            ->where(function ($query) use ($request) {
+                $query->where('day1', $request->new_day)
+                    ->orWhere('day2', $request->new_day);
+            })
+            ->first();
+
+        if (!$lesson) {
+            return redirect()->back()->with('error', '該当するレッスンが見つかりませんでした');
+        }
+
+        // その年度の4月1日を取得
+        $startDate = Carbon::create($request->new_year, 4, 1);
+
+        foreach ($request->selected_students as $student_id) {
+            UserLesson::updateOrCreate(
+                ['user_id' => $student_id, 'lesson_id' => $lesson->id],
+                ['status' => '未受講', 'start_date' => $startDate]
+            );
+        }
+
+        return redirect()->route('admin.student.showNextYear')->with('success', '生徒データを登録しました');
     }
     //
 }

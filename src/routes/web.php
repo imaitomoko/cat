@@ -98,6 +98,9 @@ Route::middleware(['auth:admin'])->group(function () {
         Route::get('/{id}/edit', [StudentController::class, 'edit'])->name('edit'); 
         Route::put('/{id}', [StudentController::class, 'update'])->name('update'); 
         Route::delete('/{userId}/destroy-all', [StudentController::class, 'destroyAll'])->name('destroyAll');
+        Route::get('/show-next-year',[StudentController::class, 'showNextYear'])->name('showNextYear');
+        Route::get('/show-next-year/search', [StudentController::class, 'searchStudent'])->name('searchStudent');
+        Route::post('/show-next-year/store', [StudentController::class, 'storeStudent'])->name('storeStudent');
     });
 
 

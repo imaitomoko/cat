@@ -27,7 +27,7 @@
     </div>
     <div class="menu">
         <div class="year-upload__button">
-            <a class="year-upload__item" href="{{ route('admin.master.index') }}">次年度データ作成</a>
+            <a class="year-upload__item" href="{{ route('admin.student.showNextYear') }}">次年度生徒データ作成</a>
         </div>
     </div>
     <div class="back__button">
