@@ -10,7 +10,8 @@
     <h2> {{ $school->en_school_name }}   {{ $class->class_name }}</h2>
     <div class="month-navigation">
         <!-- 前月ボタン -->
-        <a class="month_change" href="{{ route('month.list', ['school_id' => $school->id, 'class_id' => $class->id, 'month' => $previousMonth->month]) }}">
+        <a class="month_change" href="{{ route('teacher.month.list', ['school_id' => $school->id, 'class_id' => $class->id, 'year' => $previousMonth->year,
+        'month' => $previousMonth->month]) }}">
             << Previous month
         </a>
 
@@ -18,7 +19,7 @@
         <span class="month">{{ $startOfMonth->format('Y/m') }}</span>
 
         <!-- 翌月ボタン -->
-        <a class="month_change" href="{{ route('month.list', ['school_id' => $school->id, 'class_id' => $class->id, 'month' => $nextMonth->month]) }}">
+        <a class="month_change" href="{{ route('teacher.month.list', ['school_id' => $school->id, 'class_id' => $class->id, 'year' => $nextMonth->year, 'month' => $nextMonth->month ])}}">
             Next month >>
         </a>
     </div>
@@ -54,17 +55,40 @@
                     @endphp
 
                     <td class="{{ $dayClass }}">
-                        <strong>{{ $day['date']->day }}</strong><br>
+                            <strong>{{ $day['date']->day }}</strong><br>
                             @foreach($day['lessons'] as $lesson)
-                                @if ($lesson->day1 === $day['date']->isoFormat('ddd'))
-                                    <p class="value">{{ $lesson->lesson_value1 }}</p><!-- day1 に対応する <lesson_value1 -->
-                                @elseif ($lesson->day2 === $day['date']->isoFormat('ddd'))
-                                    <P class="value">{{ $lesson->lesson_value2 }}</P> <!-- day2 に対応する lesson_value2 -->
-                                @else
-                                    <p>休校</p>
+                                @php
+                                    $lessonValue1 = $lesson['lesson_value1'] ?? ''; 
+                                    $lessonValue2 = $lesson['lesson_value2'] ?? '';
+
+                                    $colorMap = [
+                                        '青' => 'blue',
+                                        '緑' => 'green',
+                                        '紫' => 'purple',
+                                    ];
+
+                                    $colorClass1 = '';
+                                    $colorClass2 = '';
+
+                                    foreach ($colorMap as $key => $color) {
+                                        if (str_starts_with($lessonValue1, $key)) {
+                                            $lessonValue1 = str_replace($key, '', $lessonValue1); 
+                                            $colorClass1 = $color;
+                                        }
+                                        if (str_starts_with($lessonValue2, $key)) {
+                                            $lessonValue2 = str_replace($key, '', $lessonValue2);
+                                            $colorClass2 = $color;
+                                        }
+                                    }
+                                @endphp
+
+                                @if ($lesson['day1'] === $day['date']->isoFormat('ddd') && !empty($lessonValue1))
+                                    <p class="lesson-value {{ $colorClass1 }}">{{ $lessonValue1 }}</p> <!-- day1 に対応する lesson_value1 -->
+                                @elseif ($lesson['day2'] === $day['date']->isoFormat('ddd') && !empty($lessonValue2))
+                                    <p class="lesson-value {{ $colorClass2 }}">{{ $lessonValue2 }}</p> <!-- day2 に対応する lesson_value2 -->
                                 @endif
                             @endforeach
-                    </td>
+                        </td>
 
                     @php
                         $dayOfWeek++;
@@ -75,14 +99,16 @@
                     @endphp
                 @endforeach
 
-                @for ($i = $dayOfWeek; $i < 7; $i++) 
-                    <td></td> <!-- 月末の空白 -->
-                @endfor
+                @if ($dayOfWeek > 0)
+                    @for ($i = $dayOfWeek; $i < 7; $i++)
+                        <td></td>
+                    @endfor
+                @endif
             </tr>
         </tbody>
     </table>
     <div class="back__button">
-        <a class="back" href="/search">back</a>
+        <a class="back" href="{{ url()->previous() }}">back</a>
     </div>
 </div>
 @endsection

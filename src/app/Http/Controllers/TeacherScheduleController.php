@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Lesson;
 use App\Models\School;
 use App\Models\SchoolClass;
+use App\Models\LessonValue;
 use Carbon\Carbon;
 
 class TeacherScheduleController extends Controller
@@ -42,6 +43,9 @@ class TeacherScheduleController extends Controller
         // レッスンを取得 (school_id と class_id に基づく)
         $lessons = Lesson::where('school_id', $schoolId)
             ->where('class_id', $classId)
+            ->with(['lessonValues' => function ($query) use ($startOfMonth, $endOfMonth) {
+                $query->whereBetween('date', [$startOfMonth, $endOfMonth]);
+            }])
             ->get();
 
         Carbon::setLocale('ja');
@@ -50,9 +54,22 @@ class TeacherScheduleController extends Controller
         $daysInMonth = [];
         for ($date = $startOfMonth->copy(); $date <= $endOfMonth; $date->addDay()) {
             $dayName = $date->isoFormat('ddd'); // 日本語の曜日 (e.g.金)
-            $lessonsForDay = $lessons->filter(function ($lesson) use ($dayName) {
-                return $lesson->day1 === $dayName || $lesson->day2 === $dayName;
+            $lessonsForDay = $lessons->map(function ($lesson) use ($date, $dayName) {
+            // `lesson_values` テーブルから該当するデータを取得
+                $lessonValue = $lesson->lessonValues->firstWhere('date', $date->toDateString());
+
+                \Log::info("Date: {$date->toDateString()}, Lesson ID: {$lesson->id}, Value1: " . ($lessonValue?->lesson_value1 ?? 'なし'));
+
+
+                return [
+                    'id' => $lesson->id,
+                    'day1' => $lesson->day1,
+                    'day2' => $lesson->day2,
+                    'lesson_value1' => $lessonValue?->lesson_value1 ?? null,
+                    'lesson_value2' => $lessonValue?->lesson_value2 ?? null,
+                ];
             });
+
 
             $daysInMonth[] = [
                 'date' => $date->copy(),

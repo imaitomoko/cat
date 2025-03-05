@@ -55,7 +55,7 @@ Route::middleware(['auth:teacher'])->group(function () {
     Route::get('/teacher', [TeacherAuthController::class, 'index'])->name('teacher.teacher');
     Route::get('/search',[TeacherScheduleController::class, 'showForm'])->name('teacher.search');
     Route::post('/search/result', [TeacherScheduleController::class, 'result'])->name('teacher.search.result');
-    Route::get('/month/list', [TeacherScheduleController::class, 'result'])->name('month.list');
+    Route::get('/month/list', [TeacherScheduleController::class, 'result'])->name('teacher.month.list');
     Route::get('/classSearch', [TeacherClassController::class, 'search'])->name('teacher.classSearch');
     Route::get('/classSearch/{date}', [TeacherClassController::class, 'search'])->name('teacher.classSearch.date');
 

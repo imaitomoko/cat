@@ -15,7 +15,7 @@
             <div class="form-group">
                 <label for="school_id">School Name</label>
                 <select name="school_id" id="school_id" required>
-                    <option value="">choose school</option>
+                    <option value="">Choose school</option>
                         @foreach ($schools as $school)
                     <option value="{{ $school->id }}">{{ $school->en_school_name }}</option>
                         @endforeach
@@ -24,7 +24,7 @@
             <div class="form-group">
                 <label for="class_id">Class Name</label>
                 <select name="class_id" id="class_id" required>
-                    <option value="">choose class</option>
+                    <option value="">Choose class</option>
                         @foreach ($schoolClasses as $schoolClass)
                     <option value="{{ $schoolClass->id }}">{{ $schoolClass->class_name }}</option>
                         @endforeach
