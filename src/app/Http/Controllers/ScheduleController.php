@@ -70,21 +70,30 @@ class ScheduleController extends Controller
         // カレンダー用のデータ作成
         $daysInMonth = [];
         for ($date = $startOfMonth->copy(); $date <= $endOfMonth; $date->addDay()) {
-            $dayName = $date->isoFormat('ddd'); // 日本語の曜日 (e.g.金)
-            $lessonsForDay = $lessons->filter(function ($lesson) use ($dayName) {
-                $lessonValue = $lesson->lessonValues->first(function ($value) use ($date) {
-                    return $value->date === $date->toDateString(); // `date` が一致する場合のみ取得
-                });
+            $dayName = $date->isoFormat('ddd'); // 日本語の曜日 (例: "月")
+
+            $lessonsForDay = $lessons->map(function ($lesson) use ($date, $dayName) {
+            // `lesson_values` テーブルから該当するデータを取得
+                $lessonValue = $lesson->lessonValues->firstWhere('date', $date->toDateString());
+
+                \Log::info("Date: {$date->toDateString()}, Lesson ID: {$lesson->id}, Value1: " . ($lessonValue?->lesson_value1 ?? 'なし'));
+
+
+                return [
+                    'id' => $lesson->id,
+                    'day1' => $lesson->day1,
+                    'day2' => $lesson->day2,
+                    'lesson_value1' => $lessonValue?->lesson_value1 ?? null,
+                    'lesson_value2' => $lessonValue?->lesson_value2 ?? null,
+                ];
             });
-
-
 
             $daysInMonth[] = [
                 'date' => $date->copy(),
                 'lessons' => $lessonsForDay,
             ];
         }
-
+        
         return view('schedule_list', compact(
             'school',
             'class',
