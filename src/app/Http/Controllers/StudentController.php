@@ -64,7 +64,8 @@ class StudentController extends Controller
     {
         $schools = School::all();
         $classes = SchoolClass::all(); // セレクトボックスに表示する教室
-        return view('admin.student.student_search', compact('schools', 'classes'));
+        $years = Lesson::select('year')->distinct()->orderBy('year', 'desc')->pluck('year'); // 年度一覧を取得
+        return view('admin.student.student_search', compact('schools', 'classes', 'years'));
     }
 
     public function show(Request $request)
@@ -75,6 +76,7 @@ class StudentController extends Controller
         $classId = $request->input('class_id');
 
         // 学校とクラスのデータを取得
+        $years = Lesson::select('year')->distinct()->orderBy('year', 'desc')->pluck('year'); // 年度の取得
         $schools = School::all();
         $classes = SchoolClass::all();
 
@@ -96,7 +98,7 @@ class StudentController extends Controller
         $userLessons = $query->paginate(10);
 
         // ビューにデータを渡す
-        return view('admin.student.student_search', compact('userLessons', 'schools', 'classes'));
+        return view('admin.student.student_search', compact('userLessons', 'schools', 'classes', 'years'));
     }
 
     public function destroyAll($userId)

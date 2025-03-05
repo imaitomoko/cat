@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Lesson;
 use App\Models\School;
 use App\Models\SchoolClass;
+use App\Models\LessonValue;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
@@ -226,11 +227,9 @@ class LessonController extends Controller
                     'day1'          => $lesson->day1,
                     'start_time1'   => $lesson->start_time1,
                     'duration1'     => $lesson->duration1,
-                    'lesson_value1' => $lesson->lesson_value1,
                     'day2'          => $lesson->day2,
                     'start_time2'   => $lesson->start_time2,
                     'duration2'     => $lesson->duration2,
-                    'lesson_value2' => $lesson->lesson_value2,
                     'max_number'    => $lesson->max_number,
                     'created_at'    => now(),
                     'updated_at'    => now(),

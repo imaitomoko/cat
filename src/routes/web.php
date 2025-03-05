@@ -14,6 +14,7 @@ use App\Http\Controllers\NoticeController;
 use App\Http\Controllers\LessonController;
 use App\Http\Controllers\MasterController;
 use App\Http\Controllers\StudentController;
+use App\Http\Controllers\AdminScheduleController;
 
 
 /*
@@ -101,6 +102,13 @@ Route::middleware(['auth:admin'])->group(function () {
         Route::get('/show-next-year',[StudentController::class, 'showNextYear'])->name('showNextYear');
         Route::get('/show-next-year/search', [StudentController::class, 'searchStudent'])->name('searchStudent');
         Route::post('/show-next-year/store', [StudentController::class, 'storeStudent'])->name('storeStudent');
+    });
+
+    Route::prefix('admin/schedule')->name('admin.schedule.')->group(function () {
+        Route::get('/', [AdminScheduleController::class, 'index'])->name('index');
+        Route::get('/list', [AdminScheduleController::class, 'show'])->name('show');
+        Route::post('/update/{lessonId}', [AdminScheduleController::class, 'update'])->name('update');
+
     });
 
 

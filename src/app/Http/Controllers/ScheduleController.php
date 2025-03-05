@@ -8,6 +8,7 @@ use App\Models\Lesson;
 use App\Models\School;
 use App\Models\SchoolClass;
 use App\Models\UserLesson;
+use App\Models\LessonValue;
 use Carbon\Carbon;
 
 class ScheduleController extends Controller
@@ -47,7 +48,7 @@ class ScheduleController extends Controller
         // `school_id` と `class_id` からデータを取得
         $school = School::findOrFail($schoolId);
         $class = SchoolClass::findOrFail($classId);
-
+    
         // 指定月の開始日と終了日
         $startOfMonth = Carbon::create($currentYear, $currentMonth, 1)->startOfMonth();
         $endOfMonth = $startOfMonth->copy()->endOfMonth();
@@ -59,6 +60,9 @@ class ScheduleController extends Controller
         // レッスンを取得 (school_id と class_id に基づく)
         $lessons = Lesson::where('school_id', $schoolId)
             ->where('class_id', $classId)
+            ->with(['lessonValues' => function ($query) use ($startOfMonth, $endOfMonth) {
+                $query->whereBetween('date', [$startOfMonth, $endOfMonth]);
+            }])
             ->get();
 
         Carbon::setLocale('ja');
@@ -68,8 +72,12 @@ class ScheduleController extends Controller
         for ($date = $startOfMonth->copy(); $date <= $endOfMonth; $date->addDay()) {
             $dayName = $date->isoFormat('ddd'); // 日本語の曜日 (e.g.金)
             $lessonsForDay = $lessons->filter(function ($lesson) use ($dayName) {
-                return $lesson->day1 === $dayName || $lesson->day2 === $dayName;
+                $lessonValue = $lesson->lessonValues->first(function ($value) use ($date) {
+                    return $value->date === $date->toDateString(); // `date` が一致する場合のみ取得
+                });
             });
+
+
 
             $daysInMonth[] = [
                 'date' => $date->copy(),
@@ -86,7 +94,7 @@ class ScheduleController extends Controller
             'startOfMonth', 
             'endOfMonth'
         ));
-}
+    }
 
     private function generateCalendar($startOfMonth, $endOfMonth, $lessons)
     {

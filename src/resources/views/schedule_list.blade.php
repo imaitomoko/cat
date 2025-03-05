@@ -53,18 +53,23 @@
                         }
                     @endphp
 
-                    <td class="{{ $dayClass }}">
-                        <strong>{{ $day['date']->day }}</strong><br>
+                    @foreach($daysInMonth as $day)
+                        <td class="{{ $dayClass }}">
+                            <strong>{{ $day['date']->day }}</strong><br>
                             @foreach($day['lessons'] as $lesson)
-                                @if ($lesson->day1 === $day['date']->isoFormat('ddd'))
-                                    <p class="value">{{ $lesson->lesson_value1 }}</p><!-- day1 に対応する <lesson_value1 -->
-                                @elseif ($lesson->day2 === $day['date']->isoFormat('ddd'))
-                                    <P class="value">{{ $lesson->lesson_value2 }}</P> <!-- day2 に対応する lesson_value2 -->
-                                @else
-                                    <p>休校</p>
+                                @php
+                                    $lessonValue1 = $lesson['lesson_value1'];
+                                    $lessonValue2 = $lesson['lesson_value2'];
+                                @endphp
+
+                                @if ($lesson['day1'] === $day['date']->isoFormat('ddd') && $lessonValue1)
+                                    <p class="value">{{ $lessonValue1 }}</p> <!-- day1 に対応する lesson_value1 -->
+                                @elseif ($lesson['day2'] === $day['date']->isoFormat('ddd') && $lessonValue2)
+                                    <p class="value">{{ $lessonValue2 }}</p> <!-- day2 に対応する lesson_value2 -->
                                 @endif
                             @endforeach
-                    </td>
+                        </td>
+                    @endforeach
 
                     @php
                         $dayOfWeek++;

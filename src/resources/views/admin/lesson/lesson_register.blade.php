@@ -133,7 +133,7 @@
         <button type="submit" class="btn btn-success">登録</button>
     </form>
     <div class="back__button">
-        <a class="back" href="/admin/lesson">back</a>
+        <a class="back" href="{{ url()->previous() }}">back</a>
     </div>
 </div>
 @endsection

@@ -67,28 +67,27 @@ class Lesson extends Model
     public function getLessonCalendar($year)
     {
         $calendar = [];
-        $start = Carbon::createFromFormat('Y', $year)->startOfMonth()->addMonths(3); // 4月1日開始
+        $start = Carbon::createFromFormat('Y-m-d', "{$year}-04-01"); // 4月1日開始
         $end = $start->copy()->addYear()->subDay(); // 翌年3月31日終了
 
         while ($start <= $end) {
-            $dayOfWeek = $start->dayOfWeek; // 曜日を取得 (0:日曜, 6:土曜)
-            if ($dayOfWeek == $this->day1) {
-            // `day1`に対応する曜日なら`lesson_value1`を割り当て
+            $dayOfWeek = $start->dayOfWeek; // 0:日曜, 6:土曜
+            if ($dayOfWeek == Carbon::parse($this->day1)->dayOfWeek) {
                 $calendar[$start->format('Y-m-d')] = $this->lesson_value1 ?? '休校';
-            } elseif ($dayOfWeek == $this->day2) {
-            // `day2`に対応する曜日なら`lesson_value2`を割り当て
+            } elseif ($dayOfWeek == Carbon::parse($this->day2)->dayOfWeek) {
                 $calendar[$start->format('Y-m-d')] = $this->lesson_value2 ?? '休校';
             } else {
-            // レッスンがない場合は「休校」
                 $calendar[$start->format('Y-m-d')] = '休校';
             }
-            
             $start->addDay();
         }
 
         return $calendar;
     }
 
-
+    public function lessonValues()
+    {
+        return $this->hasMany(LessonValue::class);
+    }
 
 }

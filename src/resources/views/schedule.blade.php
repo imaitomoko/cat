@@ -21,7 +21,7 @@
     </div>
     @endforeach
     <div class="back__button">
-        <a class="back" href="/">back</a>
+        <a class="back" href="{{ url()->previous() }}">back</a>
     </div>
 </div>
 @endsection

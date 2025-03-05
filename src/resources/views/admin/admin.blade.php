@@ -16,7 +16,7 @@
             <a class="menu__item" href="">個別受講状況管理</a>
         </div>
         <div class="menu__button">
-            <a class="menu__item" href="">スケジュール管理</a>
+            <a class="menu__item" href="{{ route('admin.schedule.index') }}">スケジュール管理</a>
         </div>
         <div class="menu__button">
             <a class="menu__item" href="">メール送信</a>

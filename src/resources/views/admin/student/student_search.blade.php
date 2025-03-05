@@ -14,7 +14,14 @@
         <form action="{{ route('admin.student.show') }}" method="GET" class="mb-4">
             <div class="form-group">
                 <label for="year">年度:</label>
-                <input type="number" id="year" name="year" class="form-control" placeholder="例: 2024" value="{{ request('year') }}">
+                <select id="year" name="year" class="form-control">
+                    <option value="">選択してください</option>
+                    @foreach($years as $year)
+                        <option value="{{ $year }}" {{ request('year') == $year ? 'selected' : '' }}>
+                            {{ $year }}
+                        </option>
+                    @endforeach
+                </select>
             </div>
 
             <div class="form-group">
