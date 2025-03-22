@@ -127,9 +127,8 @@ class AdminScheduleController extends Controller
                     'lesson_id' => $lessonId,
                     'date' => $date,
                 ]);
-                // lesson_value1とlesson_value2をそれぞれ更新
-                $lessonValue->lesson_value1 = $values['lesson_value1'] ?? null;
-                $lessonValue->lesson_value2 = $values['lesson_value2'] ?? null;
+        
+                $lessonValue->lesson_value = $values['lesson_value'] ?? null;
 
                 // 保存
                 $lessonValue->save();

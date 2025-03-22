@@ -15,6 +15,7 @@ use App\Http\Controllers\LessonController;
 use App\Http\Controllers\MasterController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\AdminScheduleController;
+use App\Http\Controllers\AdminStatusController;
 
 
 /*
@@ -109,6 +110,17 @@ Route::middleware(['auth:admin'])->group(function () {
         Route::get('/list', [AdminScheduleController::class, 'show'])->name('show');
         Route::post('/update/{lessonId}', [AdminScheduleController::class, 'update'])->name('update');
 
+    });
+
+    Route::prefix('admin')->name('admin.')->group(function () {
+        Route::get('/class', [AdminStatusController::class, 'index'])->name('class.index');
+        Route::get('/status/search', [AdminStatusController::class, 'search'])->name('status.search');
+        Route::post('/status/absent/{userLessonId}', [AdminStatusController::class, 'toggleAbsence'])->name('status.absent');
+        Route::get('/student/{id}', [AdminStudentController::class, 'detail'])->name('student.detail');
+        
+        Route::get('/status/update/{userLessonId}', [AdminStatusController::class, 'update'])->name('status.update');
+        Route::get('/status/makeup', [AdminStatusController::class, 'makeupShow'])->name('status.makeup');
+        Route::post('/makeup/update/{userLessonId}', [AdminStatusController::class, 'makeupUpdate'])->name('makeup.update');
     });
 
 

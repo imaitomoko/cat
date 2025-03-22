@@ -13,7 +13,7 @@
     @auth('admin')
     <div class="menu">
         <div class="menu__button">
-            <a class="menu__item" href="">個別受講状況管理</a>
+            <a class="menu__item" href="{{ route('admin.class.index') }}">個別受講状況管理</a>
         </div>
         <div class="menu__button">
             <a class="menu__item" href="{{ route('admin.schedule.index') }}">スケジュール管理</a>

@@ -18,11 +18,9 @@ class Lesson extends Model
         'day1',
         'start_time1',
         'duration1',
-        'lesson_value1',
         'day2',
         'start_time2',
         'duration2',
-        'lesson_value2',
         'max_number',
         
     ];
@@ -73,9 +71,9 @@ class Lesson extends Model
         while ($start <= $end) {
             $dayOfWeek = $start->dayOfWeek; // 0:日曜, 6:土曜
             if ($dayOfWeek == Carbon::parse($this->day1)->dayOfWeek) {
-                $calendar[$start->format('Y-m-d')] = $this->lesson_value1 ?? '休校';
+                $calendar[$start->format('Y-m-d')] = $this->lesson_value ?? '休校';
             } elseif ($dayOfWeek == Carbon::parse($this->day2)->dayOfWeek) {
-                $calendar[$start->format('Y-m-d')] = $this->lesson_value2 ?? '休校';
+                $calendar[$start->format('Y-m-d')] = $this->lesson_value ?? '休校';
             } else {
                 $calendar[$start->format('Y-m-d')] = '休校';
             }
@@ -89,5 +87,7 @@ class Lesson extends Model
     {
         return $this->hasMany(LessonValue::class);
     }
+
+    
 
 }

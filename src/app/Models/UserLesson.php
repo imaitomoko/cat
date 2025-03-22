@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
+
 
 class UserLesson extends Model
 {
@@ -15,8 +17,7 @@ class UserLesson extends Model
         'user_id',
         'lesson_id',
         'start_date',
-        'end_date',
-        'status',
+        'end_date'
     ];
 
     public function lesson()
@@ -28,5 +29,40 @@ class UserLesson extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+
+    public function userLessonStatus()
+    {
+        return $this->hasOne(UserLessonStatus::class);
+    }
+
+    public function isActive()
+    {
+        // 現在の日付
+        $now = Carbon::now();
+
+        // start_date と end_date が設定されている場合、期間内で有効かを判定
+        if ($this->start_date && $this->end_date) {
+            return $now->between(Carbon::parse($this->start_date), Carbon::parse($this->end_date));
+        }
+
+        // start_date と end_date が設定されていない場合は有効
+        return true;
+    }
+
+    public function rescheduledFrom()
+    {
+        return $this->hasOne(Reschedule::class, 'new_user_lesson_id');
+    }
+
+    public function reschedule()
+    {
+        return $this->hasOne(Reschedule::class, 'user_lesson_status_id');
+    }
+
+    public function newUserLesson()
+    {
+        return $this->hasOne(UserLesson::class, 'id', 'new_user_lesson_id');
+    }
+
 
 }

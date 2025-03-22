@@ -72,40 +72,40 @@
                                 @php
                                     $lessonValue = $lesson->lessonValues->firstWhere('date', $day['date']->format('Y-m-d'));
                                 @endphp
-                                <select name="lesson_values[{{ $day['date']->format    ('Y-m-d') }}][{{ $lesson->id }}][lesson_value1]" class="lesson-select">
+                                <select name="lesson_values[{{ $day['date']->format    ('Y-m-d') }}][{{ $lesson->id }}][lesson_value]" class="lesson-select">
                                     @if($lesson->day1 === $day['date']->isoFormat('ddd'))
-                                        <option value="青①" class="blue" @if($lessonValue && $lessonValue->lesson_value1 === '青①') selected @endif>①</option>
-                                        <option value="青②" class="blue" @if($lessonValue && $lessonValue->lesson_value1 === '青②') selected @endif>②</option>
-                                        <option value="青③" class="blue" @if($lessonValue && $lessonValue->lesson_value1 === '青③') selected @endif>③</option>
-                                        <option value="青④" class="blue" @if($lessonValue && $lessonValue->lesson_value1 === '青④') selected @endif>④</option>
-                                        <option value="緑①" class="green" @if($lessonValue && $lessonValue->lesson_value1 === '緑①') selected @endif>①</option>
-                                        <option value="緑②" class="green" @if($lessonValue && $lessonValue->lesson_value1 === '緑②') selected @endif>②</option>
-                                        <option value="緑③" class="green" @if($lessonValue && $lessonValue->lesson_value1 === '緑③') selected @endif>③</option>
-                                        <option value="緑④" class="green" @if($lessonValue && $lessonValue->lesson_value1 === '緑④') selected @endif>④</option>
-                                        <option value="紫①" class="purple" @if($lessonValue && $lessonValue->lesson_value1 === '紫①') selected @endif>①</option>
-                                        <option value="紫②" class="purple" @if($lessonValue && $lessonValue->lesson_value1 === '紫②') selected @endif>②</option>
-                                        <option value="紫③" class="purple" @if($lessonValue && $lessonValue->lesson_value1 === '紫③') selected @endif>③</option>
-                                        <option value="紫④" class="purple" @if($lessonValue && $lessonValue->lesson_value1 === '紫④') selected @endif>④</option>
-                                        <option value="休校" class="gray" @if($lessonValue && $lessonValue->lesson_value1 === '休校') selected @endif>休校</option>
+                                        <option value="青①" class="blue" @if($lessonValue && $lessonValue->lesson_value === '青①') selected @endif>①</option>
+                                        <option value="青②" class="blue" @if($lessonValue && $lessonValue->lesson_value === '青②') selected @endif>②</option>
+                                        <option value="青③" class="blue" @if($lessonValue && $lessonValue->lesson_value === '青③') selected @endif>③</option>
+                                        <option value="青④" class="blue" @if($lessonValue && $lessonValue->lesson_value === '青④') selected @endif>④</option>
+                                        <option value="緑①" class="green" @if($lessonValue && $lessonValue->lesson_value === '緑①') selected @endif>①</option>
+                                        <option value="緑②" class="green" @if($lessonValue && $lessonValue->lesson_value === '緑②') selected @endif>②</option>
+                                        <option value="緑③" class="green" @if($lessonValue && $lessonValue->lesson_value === '緑③') selected @endif>③</option>
+                                        <option value="緑④" class="green" @if($lessonValue && $lessonValue->lesson_value === '緑④') selected @endif>④</option>
+                                        <option value="紫①" class="purple" @if($lessonValue && $lessonValue->lesson_value === '紫①') selected @endif>①</option>
+                                        <option value="紫②" class="purple" @if($lessonValue && $lessonValue->lesson_value === '紫②') selected @endif>②</option>
+                                        <option value="紫③" class="purple" @if($lessonValue && $lessonValue->lesson_value === '紫③') selected @endif>③</option>
+                                        <option value="紫④" class="purple" @if($lessonValue && $lessonValue->lesson_value === '紫④') selected @endif>④</option>
+                                        <option value="休校" class="gray" @if($lessonValue && $lessonValue->lesson_value === '休校') selected @endif>休校</option>
                                     @endif
                                 </select>
 
                                 @if($lesson->day2 && $lesson->day2 === $day['date']->isoFormat('ddd'))
-                                    <select name="lesson_values[{{ $day['date']->format('Y-m-d') }}][{{ $lesson->id }}][lesson_value2]" class="lesson-select">
+                                    <select name="lesson_values[{{ $day['date']->format('Y-m-d') }}][{{ $lesson->id }}][lesson_value]" class="lesson-select">
                                         @if($lesson->day2 === $day['date']->isoFormat('ddd'))
-                                            <option value="青①" class="blue" @if($lessonValue && $lessonValue->lesson_value2 === '青①') selected @endif>①</option>
-                                            <option value="青②" class="blue" @if($lessonValue && $lessonValue->lesson_value2 === '青②') selected @endif>②</option>
-                                            <option value="青③" class="blue" @if($lessonValue && $lessonValue->lesson_value2 === '青③') selected @endif>③</option>
-                                            <option value="青④" class="blue" @if($lessonValue && $lessonValue->lesson_value2 === '青④') selected @endif>④</option>
-                                            <option value="緑①" class="green" @if($lessonValue && $lessonValue->lesson_value2 === '緑①') selected @endif>①</option>
-                                            <option value="緑②" class="green" @if($lessonValue && $lessonValue->lesson_value2 === '緑②') selected @endif>②</option>
-                                            <option value="緑③" class="green" @if($lessonValue && $lessonValue->lesson_value2 === '緑③') selected @endif>③</option>
-                                            <option value="緑④" class="green" @if($lessonValue && $lessonValue->lesson_value2 === '緑④') selected @endif>④</option>
-                                            <option value="紫①" class="purple" @if($lessonValue && $lessonValue->lesson_value2 === '紫①') selected @endif>①</option>
-                                            <option value="紫②" class="purple" @if($lessonValue && $lessonValue->lesson_value2 === '紫②') selected @endif>②</option>
-                                            <option value="紫③" class="purple" @if($lessonValue && $lessonValue->lesson_value2 === '紫③') selected @endif>③</option>
-                                            <option value="紫④" class="purple" @if($lessonValue && $lessonValue->lesson_value2 === '紫④') selected @endif>④</option>
-                                            <option value="休校" class="gray" @if($lessonValue && $lessonValue->lesson_value2 === '休校') selected @endif>休校</option>
+                                            <option value="青①" class="blue" @if($lessonValue && $lessonValue->lesson_value === '青①') selected @endif>①</option>
+                                            <option value="青②" class="blue" @if($lessonValue && $lessonValue->lesson_value === '青②') selected @endif>②</option>
+                                            <option value="青③" class="blue" @if($lessonValue && $lessonValue->lesson_value === '青③') selected @endif>③</option>
+                                            <option value="青④" class="blue" @if($lessonValue && $lessonValue->lesson_value === '青④') selected @endif>④</option>
+                                            <option value="緑①" class="green" @if($lessonValue && $lessonValue->lesson_value === '緑①') selected @endif>①</option>
+                                            <option value="緑②" class="green" @if($lessonValue && $lessonValue->lesson_value === '緑②') selected @endif>②</option>
+                                            <option value="緑③" class="green" @if($lessonValue && $lessonValue->lesson_value === '緑③') selected @endif>③</option>
+                                            <option value="緑④" class="green" @if($lessonValue && $lessonValue->lesson_value === '緑④') selected @endif>④</option>
+                                            <option value="紫①" class="purple" @if($lessonValue && $lessonValue->lesson_value === '紫①') selected @endif>①</option>
+                                            <option value="紫②" class="purple" @if($lessonValue && $lessonValue->lesson_value === '紫②') selected @endif>②</option>
+                                            <option value="紫③" class="purple" @if($lessonValue && $lessonValue->lesson_value === '紫③') selected @endif>③</option>
+                                            <option value="紫④" class="purple" @if($lessonValue && $lessonValue->lesson_value === '紫④') selected @endif>④</option>
+                                            <option value="休校" class="gray" @if($lessonValue && $lessonValue->lesson_value === '休校') selected @endif>休校</option>
                                         @endif
                                     </select>
                                 @endif

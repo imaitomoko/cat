@@ -47,9 +47,7 @@ class User extends Authenticatable
 
     public function lessons()
     {
-        return $this->belongsToMany(Lesson::class, 'user_lessons', 'user_id', 'lesson_id')
-                    ->withPivot('status', 'end_date', 'status')
-                    ->withTimestamps();
+        return $this->hasManyThrough(Lesson::class, UserLesson::class, 'user_id', 'id', 'id', 'lesson_id');
     }
 
     public function userLessons()

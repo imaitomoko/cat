@@ -10,7 +10,7 @@ class LessonValue extends Model
     use HasFactory;
 
     protected $fillable = [
-        'lesson_id', 'date', 'lesson_value1', 'lesson_value2'
+        'lesson_id', 'date', 'lesson_value'
     ];
 
     public function lesson()

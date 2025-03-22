@@ -34,7 +34,7 @@
         </form>
     </div>
     <div class="back__button">
-        <a href="/teacher">back</a>
+        <a href="{{ url()->previous() }}">back</a>
     </div>
 </div>
 @endsection

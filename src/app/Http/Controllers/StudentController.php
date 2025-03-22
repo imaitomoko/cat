@@ -9,6 +9,7 @@ use App\Models\School;
 use App\Models\SchoolClass;
 use App\Models\UserLesson;
 use App\Models\User;
+use App\Models\UserLessonStatus;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
 
@@ -47,18 +48,56 @@ class StudentController extends Controller
         if (!empty($validated['lessons'])) {
             foreach ($validated['lessons'] as $lesson) {
                 $lessonModel = Lesson::where('lesson_id', $lesson['lesson_id'])->firstOrFail();
-                UserLesson::create([
+                $userLesson = UserLesson::create([
                     'user_id' => $user->id,
                     'lesson_id' => $lessonModel->id,
                     'start_date' => $lesson['start_date'],
                     'end_date' => $lesson['end_date'],
                     'status' => '未受講', // status をデフォルトで「未受講」に設定
                 ]);
+                $this->generateUserLessonStatuses($userLesson);
             }
         }
 
         return redirect()->route('admin.student.index')->with('success', '生徒を登録しました');
     }
+
+    private function generateUserLessonStatuses(UserLesson $userLesson)
+    {
+        $lesson = $userLesson->lesson;
+
+        // start_date と end_date が指定されていない場合は、lesson.year に基づいて設定
+        $startDate = Carbon::parse($userLesson->start_date ?? "{$lesson->year}-04-01");
+
+        // end_date が null の場合、lesson.year + 1 の 3月31日を設定
+        $endDate = $userLesson->end_date ? Carbon::parse($userLesson->end_date) : Carbon::parse("".($lesson->year + 1)."-03-31");
+
+        $lessonDays = [$lesson->day1, $lesson->day2];
+
+        $weekdayMap = [
+            '日' => 'Sunday',
+            '月' => 'Monday',
+            '火' => 'Tuesday',
+            '水' => 'Wednesday',
+            '木' => 'Thursday',
+            '金' => 'Friday',
+            '土' => 'Saturday',
+        ];
+
+        $currentDate = $startDate->copy();
+
+        while ($currentDate->lte($endDate)) {
+            if (in_array($currentDate->format('l'), array_map(fn($d) => $weekdayMap[$d] ?? '', $lessonDays))) {
+                UserLessonStatus::create([
+                    'user_lesson_id' => $userLesson->id,
+                    'date' => $currentDate->toDateString(),
+                    'status' => '未受講',
+                ]);
+            }
+            $currentDate->addDay();
+        }
+    }
+
 
     public function search()
     {
@@ -174,10 +213,33 @@ class StudentController extends Controller
                 $userLesson->start_date = $startDate;
                 $userLesson->end_date = $endDate;
                 $userLesson->save();
+
+                $this->updateUserLessonStatus($userLesson, $startDate, $endDate, $lesson);
             }
         }
 
         return redirect()->route('admin.student.index')->with('success', 'レッスン情報が更新されました。');
+    }
+
+    private function updateUserLessonStatus(UserLesson $userLesson, $startDate, $endDate, Lesson $lesson)
+    {
+        // 既存の user_lesson_status を取得
+        $existingStatuses = $userLesson->userLessonStatuses;
+
+        // user_lesson_status の更新処理
+        foreach ($existingStatuses as $status) {
+           // 変更されたレッスン情報に基づいて status を更新
+            if ($lesson->id != $status->lesson_id) {
+                $status->lesson_id = $lesson->id;  // 新しいレッスンIDを設定
+            }
+
+            $status->date = $startDate; // 例: 開始日に基づいて status を更新
+            $status->status = '未受講'; // 必要に応じて他のステータスに変更
+            $status->save();
+        }
+
+        // 新しい `user_lesson_status` を追加（必要に応じて）
+        $this->generateUserLessonValues($userLesson);
     }
 
     public function showNextYear()
@@ -190,7 +252,6 @@ class StudentController extends Controller
 
         return view('admin.student.student_next_year', compact('years','schools', 'classes', 'students', 'lessons'));
     }
-
 
     public function searchStudent(Request $request)
     {
@@ -248,13 +309,24 @@ class StudentController extends Controller
         $startDate = Carbon::create($request->new_year, 4, 1);
 
         foreach ($request->selected_students as $student_id) {
-            UserLesson::updateOrCreate(
+            $userLesson = UserLesson::updateOrCreate(
                 ['user_id' => $student_id, 'lesson_id' => $lesson->id],
-                ['status' => '未受講', 'start_date' => $startDate]
+                ['start_date' => $startDate]
             );
+            $this->addUserLessonStatus($userLesson, $startDate);
         }
 
         return redirect()->route('admin.student.showNextYear')->with('success', '生徒データを登録しました');
+    }
+
+    private function addUserLessonStatus(UserLesson $userLesson, $startDate)
+    {
+         // user_lesson_status を作成
+        UserLessonStatus::create([
+            'user_lesson_id' => $userLesson->id,
+            'date' => $startDate->toDateString(), // start_date を基に日付を設定
+            'status' => '未受講', // 初期状態は「未受講」
+        ]);
     }
     //
 }
