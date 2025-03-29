@@ -11,6 +11,7 @@ use App\Models\LessonValue;
 use App\Models\UserLesson;
 use App\Models\UserLessonStatus;
 use App\Models\Reschedule;
+use App\Models\User;
 use Carbon\Carbon;
 
 class AdminStatusController extends Controller
@@ -84,7 +85,7 @@ class AdminStatusController extends Controller
             ->with(['user', 'lesson', 'userLessonStatus', 'userLessonStatus.reschedule.newUserLesson', 'rescheduledFrom'])
             ->get()
             ->map(function ($userLesson) use ($date, $weekdayJapanese) {
-                // lessonValue を取得して曜日に基づき start_time1 または start_time2 を選択
+                // start_time1 または start_time2 を選択
                 $lesson = $userLesson->lesson;
                 $startTime = null;
 
@@ -114,9 +115,19 @@ class AdminStatusController extends Controller
 
     public function detail($id)
     {
-        $student = User::with(['userLessons.lesson'])->findOrFail($id);
+        $startDate = now()->subMonth(); // 今日の1ヶ月前
+        $endDate = now()->addMonth();   // 今日の1ヶ月後
+
+        $student = User::with([
+            'userLessons.lesson.school',
+            'userLessons.lesson.schoolClass',
+            'userLessons.userLessonStatus'=> function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('date', [$startDate, $endDate]);
+            }
+        ])->findOrFail($id);
 
         return view('admin.status.admin_status', compact('student'));
+
     }
 
     public function toggleAbsence($userLessonId)

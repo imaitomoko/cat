@@ -32,7 +32,7 @@ class UserLesson extends Model
 
     public function userLessonStatus()
     {
-        return $this->hasOne(UserLessonStatus::class);
+        return $this->hasMany(UserLessonStatus::class, 'user_lesson_id');
     }
 
     public function isActive()
