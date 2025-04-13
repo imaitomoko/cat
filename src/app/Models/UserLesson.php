@@ -64,5 +64,10 @@ class UserLesson extends Model
         return $this->hasOne(UserLesson::class, 'id', 'new_user_lesson_id');
     }
 
+    public function sendTos()
+    {
+        return $this->hasMany(SendTo::class);
+    }
+
 
 }

@@ -100,10 +100,10 @@ class AdminStatusController extends Controller
                 return [
                     'userLesson' => $userLesson,
                     'user' => $userLesson->user,
-                    'lessonDate' => Carbon::parse($userLesson->userLessonStatus->date ?? $userLesson->lesson->start_date),
+                    'lessonDate' => Carbon::parse(optional($userLesson->userLessonStatus->first())->date ?? $userLesson->lesson->start_date),
                     'startTime' => $startTime,
-                    'status' => $userLesson->userLessonStatus->status ?? null,
-                    'rescheduleTo' => optional($userLesson->userLessonStatus->reschedule)->date,
+                    'status' => $userLesson->userLessonStatus->first()->status ?? null,
+                    'rescheduleTo' => optional($userLesson->userLessonStatus->first()->reschedule)->date,
                     'isRescheduled' => $userLesson->reschedules && $userLesson->reschedules->isNotEmpty() 
                         ? optional($userLesson->reschedules->first())->newUserLesson->userLessonStatus->date 
                         : null,
@@ -123,7 +123,8 @@ class AdminStatusController extends Controller
             'userLessons.lesson.schoolClass',
             'userLessons.userLessonStatus'=> function ($query) use ($startDate, $endDate) {
                 $query->whereBetween('date', [$startDate, $endDate]);
-            }
+            },
+            'userLessons.userLessonStatus.reschedule.newUserLesson.lesson' // 振替情報を取得
         ])->findOrFail($id);
 
         return view('admin.status.admin_status', compact('student'));
@@ -152,6 +153,98 @@ class AdminStatusController extends Controller
 
         return back()->with('status', 'ステータスを更新しました');
     }
+
+    public function makeupShow($userLessonStatusId)
+    {
+        $userLessonStatus = UserLessonStatus::with('userLesson.lesson')->findOrFail($userLessonStatusId);
+        $user = $userLessonStatus->userLesson->user;
+        $currentLesson = $userLessonStatus->userLesson->lesson;
+    
+        $startDate = now()->subMonth();
+        $endDate = now()->addMonth();
+
+        if (!function_exists('getNearestDate')) {
+            function getNearestDate($japaneseDay)
+            {
+                // 日本語の曜日を Carbon の曜日番号に変換
+                $weekMap = [
+                    '日' => 0,
+                    '月' => 1,
+                    '火' => 2,
+                    '水' => 3,
+                    '木' => 4,
+                    '金' => 5,
+                    '土' => 6,
+                ];
+
+                if (!isset($weekMap[$japaneseDay])) {
+                     return '日付不明'; // 万が一、曜日が間違っていた場合
+                }
+
+                // 今日の日付
+                $today = Carbon::today();
+
+                // 次に来る該当曜日の日付を取得
+                $targetDate = $today->copy()->next($weekMap[$japaneseDay]);
+
+                 // m/d 形式で返す
+                return $targetDate->format('m/d');
+            }
+        }
+
+        // そのクラスの別の曜日で、かつユーザーがまだ受講していないレッスンを取得
+        $availableLessons = Lesson::where('school_class_id', $currentLesson->school_class_id)
+            ->whereBetween('start_date', [$startDate, $endDate])
+            ->where(function ($query) use ($currentLesson) {
+                $query->where('day1', '!=', $currentLesson->day1)
+                        ->orWhere('day2', '!=', $currentLesson->day1);
+            })
+            ->whereDoesntHave('userLessons.userLessonStatus', function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
+            ->get();
+
+        // そのクラスがある他の教室を取得
+        $otherSchools = School::whereHas('classes', function ($query) use ($currentLesson) {
+            $query->where('id', $currentLesson->school_class_id);
+        })->get();
+
+        return view('admin.reschedule.form', compact('userLessonStatus', 'availableLessons', 'otherSchools', 'user'));
+    }
+
+    public function reschedule(Request $request)
+    {
+        $validated = $request->validate([
+            'user_lesson_status_id' => 'required|exists:user_lesson_statuses,id',
+            'new_lesson_id' => 'required|exists:lessons,id',
+        ]);
+
+        $originalLessonStatus = UserLessonStatus::findOrFail($validated['user_lesson_status_id']);
+        $newLesson = Lesson::findOrFail($validated['new_lesson_id']);
+
+        // 振替先の UserLesson を取得または作成
+        $newUserLesson = UserLesson::firstOrCreate([
+            'user_id' => $originalLessonStatus->userLesson->user_id,
+            'lesson_id' => $newLesson->id,
+        ]);
+
+        // 新しい UserLessonStatus を作成
+        $newUserLessonStatus = UserLessonStatus::create([
+            'user_lesson_id' => $newUserLesson->id,
+            'date' => $newLesson->start_date,
+            'status' => '振替',
+        ]);
+
+        // Reschedule モデルを保存（振替情報を記録）
+        Reschedule::create([
+            'user_lesson_status_id' => $originalLessonStatus->id,
+            'new_user_lesson_id' => $newUserLesson->id,
+        ]);
+
+        return redirect()->route('admin.status.makeup')->with('success', '振替予約が完了しました。');
+    }
+
+
 
     //
 }

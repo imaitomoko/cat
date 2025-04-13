@@ -18,6 +18,7 @@
             <tr>
                 <th>日付</th>
                 <th>予約状況</th>
+                <th>振替状況</th>
             </tr>
         </thead>
         <tbody>
@@ -35,6 +36,9 @@
                         } elseif ($lesson->day2 === $weekdayJapanese && !empty($lesson->start_time2)) {
                             $startTime = \Carbon\Carbon::parse($lesson->start_time2);
                         }
+                        // 振替情報の取得
+                        $reschedule = $status->reschedule;
+                        $rescheduledLesson = $reschedule ? $reschedule->newUserLesson : null;
                     @endphp
                     <tr>
                         <td>{{ \Carbon\Carbon::parse($status->date)->locale('ja')->isoFormat('YYYY-MM-DD（ddd）') }}</td>
@@ -72,6 +76,33 @@
                                 @else
                                     <span>{{ $status->status }}</span>
                                 @endif
+                            @endif
+                        </td>
+                        <td>
+                            @if ($reschedule)
+                                @php
+                                    $rescheduleDate = \Carbon\Carbon::parse($rescheduledLesson->lesson->start_time1);
+                                @endphp
+                                @if ($rescheduleDate->lt($now))
+                                    <span>振替済み（{{ $rescheduleDate->format('Y-m-d') }}）</span>
+                                @else
+                                    <span>振替予定（{{ $rescheduleDate->format('Y-m-d') }}）</span>
+                                    <!-- 振替変更ボタン -->
+                                    <form action="{{ route('admin.reschedule.edit', ['rescheduleId' => $reschedule->id]) }}" method="GET">
+                                        <button type="submit" class="reschedule-edit-btn">振替変更</button>
+                                    </form>
+                                    <!-- 振替キャンセルボタン -->
+                                    <form action="{{ route('admin.reschedule.cancel', ['rescheduleId' => $reschedule->id]) }}" method="POST" onsubmit="return confirm('本当に振替をキャンセルしますか？');">
+                                    @csrf
+                                    @method('DELETE')
+                                        <button type="submit" class="reschedule-cancel-btn">振替キャンセル</button>
+                                    </form>
+                                @endif
+                            @elseif ($status->status === '欠席する' || $status->status === '未受講')
+                                <form action="{{ route('admin.status.makeup', ['user_lesson_status_id' => $lesson->userLessonStatus->id]) }}" method="GET">
+                                    @csrf
+                                    <button type="submit" class="reschedule-btn">振替予約</button>
+                                </form>
                             @endif
                         </td>
                     </tr>

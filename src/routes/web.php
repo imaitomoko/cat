@@ -15,7 +15,7 @@ use App\Http\Controllers\LessonController;
 use App\Http\Controllers\MasterController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\AdminScheduleController;
-use App\Http\Controllers\AdminStatusController;
+use App\Http\Controllers\MailController;
 
 
 /*
@@ -119,13 +119,22 @@ Route::middleware(['auth:admin'])->group(function () {
         Route::get('/student/{id}', [AdminStatusController::class, 'detail'])->name('student.detail');
 
         Route::get('/status/update/{userLessonId}', [AdminStatusController::class, 'update'])->name('status.update');
-        Route::get('/status/makeup', [AdminStatusController::class, 'makeupShow'])->name('status.makeup');
+        Route::get('/status/makeup/{userLessonStatusId}', [AdminStatusController::class, 'makeupShow'])->name('status.makeup');
         Route::post('/makeup/update/{userLessonId}', [AdminStatusController::class, 'makeupUpdate'])->name('makeup.update');
     });
 
+    Route::prefix('admin')->name('admin.')->group(function () {
+        Route::get('/mails', [MailController::class, 'index'])->name('mails.index');
+        Route::get('/mails/create', [MailController::class, 'create'])->name('mails.create');
+        Route::get('/mails/sendTo', [MailController::class, 'search'])->name('mails.sendTo');
+        Route::get('/schools/{year}', [MailController::class, 'getSchoolsByYear']);
+        Route::get('/classes/{schoolId}', [MailController::class, 'getClassesBySchool']);
+        Route::get('/days/{classId}', [MailController::class, 'getDaysByClass']);
+        Route::post('/mails/send', [MailController::class, 'result'])->name('mails.send');
+        Route::post('/mails/confirm', [MailController::class, 'confirm'])->name('mails.confirm');
+        Route::post('/mails/store', [MailController::class, 'store'])->name('mails.store');
 
-
-
+    });
 
 
 });

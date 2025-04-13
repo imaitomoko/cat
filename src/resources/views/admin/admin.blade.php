@@ -19,7 +19,7 @@
             <a class="menu__item" href="{{ route('admin.schedule.index') }}">スケジュール管理</a>
         </div>
         <div class="menu__button">
-            <a class="menu__item" href="">メール送信</a>
+            <a class="menu__item" href="{{ route('admin.mails.index') }}">メール送信</a>
         </div>
     </div>
     <div class="menu">
