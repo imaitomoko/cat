@@ -65,7 +65,7 @@
         <button type="submit" class="btn btn-primary">登録</button>
     </form>
     <div class="back__button">
-        <a class="back" href="/admin/student">back</a>
+        <a class="back" href="{{ url()->previous() }}">back</a>
     </div>
 </div>
 <script>

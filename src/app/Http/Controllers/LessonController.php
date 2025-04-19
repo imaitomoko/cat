@@ -29,6 +29,7 @@ class LessonController extends Controller
 
     public function show(Request $request)
     {
+        $year = $request->query('year');
         // 年度と教室で検索
         $lessons = Lesson::query();
 
@@ -60,7 +61,10 @@ class LessonController extends Controller
         $schools = School::all(); // 検索フォームの教室選択用
         $years = Lesson::select('year')->distinct()->orderBy('year', 'desc')->pluck('year'); // 年度の取得
 
-        return view('admin.lesson.lesson_search', compact('lessons', 'schools', 'years'));
+        $selectedYear = $request->year;
+        $selectedSchoolId = $request->school_id;
+
+        return view('admin.lesson.lesson_search', compact('lessons', 'schools', 'years', 'selectedYear', 'selectedSchoolId' ));
     }
 
     public function generatePDF(Request $request)
@@ -89,21 +93,26 @@ class LessonController extends Controller
         // return $pdf->download('lesson_list.pdf'); // ダウンロード
     }
 
-    public function edit($id)
+    public function edit(Request $request,$id)
     {
         $lesson = Lesson::findOrFail($id); // 指定されたレッスンを取得
+        $year = $request->query('year');
+        $school_id = $request->query('school_id');
 
-        return view('admin.lesson.lesson_edit', compact('lesson')); // 編集ビューにデータを渡す
+        return view('admin.lesson.lesson_edit', compact('lesson', 'year', 'school_id')); // 編集ビューにデータを渡す
     }
 
     public function update(Request $request, $id)
     {
-    // バリデーション
+        $year = $request->input('year');
+        $school_id = $request->input('school_id');   
+
+        // バリデーション
         $request->validate([
             'day1'       => 'nullable|string|max:10',
             'day2'       => 'nullable|string|max:10',
-            'start_time1' => 'nullable|date_format:H:i',
-            'start_time2' => 'nullable|date_format:H:i',
+            'start_time1' => 'nullable|sometimes|date_format:H:i',
+            'start_time2' => 'nullable|sometimes|date_format:H:i',
             'max_number'  => 'required|integer|min:1',
         ]);
 
@@ -112,14 +121,16 @@ class LessonController extends Controller
 
     // データの更新
         $lesson->day1 = $request->day1;
-        $lesson->day2 = $request->day2;
+        $lesson->day2 = $request->filled('day2') ? $request->day2 : null;
         $lesson->start_time1 = $request->start_time1;
-        $lesson->start_time2 = $request->start_time2;
+        $lesson->start_time2 = $request->has('clear_start_time2') ? null : $request->start_time2;
         $lesson->max_number = $request->max_number;
         $lesson->save();
-
     // 成功メッセージを付加してリダイレクト
-        return redirect()->route('admin.lesson.show')->with('success', 'レッスンを更新しました。');
+        return redirect()->route('admin.lesson.show', [
+            'year' => $year,
+            'school_id' => $school_id,
+        ])->with('success', 'レッスンを更新しました。');
     }
 
 
@@ -162,25 +173,36 @@ class LessonController extends Controller
             'duration1' => 'required|integer',
             'max_number' => 'required|integer',
         ]);
+        
+        $daysMapEnToJa = [
+            'Sunday' => '日',
+            'Monday' => '月',
+            'Tuesday' => '火',
+            'Wednesday' => '水',
+            'Thursday' => '木',
+            'Friday' => '金',
+            'Saturday' => '土',
+        ];
 
-        $day1 = Carbon::parse($request->day1)->locale('ja')->isoFormat('ddd'); // 例: Sunday
-        $day2 = Carbon::parse($request->day2)->locale('ja')->isoFormat('ddd'); // 例: Monday
+        $daysMapJaToNumber = [
+            '日' => 0, '月' => 1, '火' => 2, '水' => 3,
+            '木' => 4, '金' => 5, '土' => 6,
+        ];
 
-        $daysMap = [
-        'Sunday' => '日',
-        'Monday' => '月',
-        'Tuesday' => '火',
-        'Wednesday' => '水',
-        'Thursday' => '木',
-        'Friday' => '金',
-        'Saturday' => '土',
-    ];
+        $day1En = $request->day1;
+        $day1Japanese = $daysMapEnToJa[$day1En] ?? null;
+        $day1Number = $daysMapJaToNumber[$day1Japanese] ?? null;
 
-    // 英語の曜日を日本語の短縮形に変換
-        $day1Japanese = $daysMap[$day1] ?? $day1;
-        $day2Japanese = $daysMap[$day2] ?? $day2;
+        $day2Japanese = null;
+        $day2Number = null;
 
-        Lesson::create([
+        if (!empty($request->day2)) {
+            $day2En = $request->day2;
+            $day2Japanese = $daysMapEnToJa[$day2En] ?? null;
+            $day2Number = $daysMapJaToNumber[$day2Japanese] ?? null;
+        } 
+
+        $lesson = Lesson::create([
             'lesson_id' => $request->lesson_id,
             'year' => $request->year,
             'school_id' => $request->school_id,
@@ -193,6 +215,24 @@ class LessonController extends Controller
             'duration2' => $request->duration2,
             'max_number' => $request->max_number,
         ]);
+
+        $start = Carbon::createFromDate($request->year, 4, 1);
+        $end = $start->copy()->addYear()->subDay();
+
+        // ループして曜日が一致したら登録
+        while ($start <= $end) {
+            $dayOfWeek = $start->dayOfWeek;
+
+            if ($dayOfWeek === $day1Number || $dayOfWeek === $day2Number) {
+                \App\Models\LessonValue::create([
+                    'lesson_id' => $lesson->id,
+                    'date' => $start->format('Y-m-d'),
+                    'lesson_value' => '青①',
+                ]);
+            }
+
+            $start->addDay();
+        }
 
         return redirect()->route('admin.lesson.index')->with('success', 'レッスンを登録しました。');
     }

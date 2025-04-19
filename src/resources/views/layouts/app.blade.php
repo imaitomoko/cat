@@ -31,7 +31,7 @@
     </main>
     
     <footer class="footer">
-        &copy; 2025 Ivy House. All rights reserved.
+        &copy; Ivy House. All rights reserved.
     </footer>
 </body>
 

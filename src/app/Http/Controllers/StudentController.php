@@ -142,14 +142,20 @@ class StudentController extends Controller
 
     public function destroyAll($userId)
     {
-        $user = User::findOrFail($userId);
-        // 指定されたIDのレッスンを取得
-        $user->lessons()->detach(); 
+        $user = User::with('userLessons.userLessonStatus')->findOrFail($userId);
 
-    // レッスンを削除
+        // ① user_lesson_statuses を削除
+        foreach ($user->userLessons as $userLesson) {
+            $userLesson->userLessonStatus()->delete();
+        }
+
+        // ② user_lessons を削除
+        $user->userLessons()->delete();
+
+        // ③ user を削除
         $user->delete();
 
-    // 成功メッセージを表示し、一覧画面にリダイレクト
+       // 成功メッセージを表示し、一覧画面にリダイレクト
         return redirect()->route('admin.student.index')->with('success', '生徒情報を削除しました。');
     }
 
@@ -168,7 +174,8 @@ class StudentController extends Controller
 
     public function update(Request $request, $id)
     {
-        $userLesson = UserLesson::with('lesson')->findOrFail($id);
+        $userLesson = UserLesson::with(['lesson', 'user.lessons', 'userLessonStatus'])->findOrFail($id);
+        $user = User::where('user_id', $request->user_id)->firstOrFail();
 
         $validated = $request->validate([
             'user_id' => 'required|exists:users,user_id',
@@ -177,69 +184,86 @@ class StudentController extends Controller
             'password' => 'nullable|string|min:6',
             'lesson_ids' => 'required|array', // 複数のレッスンIDを受け付ける
             'lesson_ids.*' => 'string|exists:lessons,lesson_id',
+            'user_lesson_ids' => 'nullable|array', 
+            'user_lesson_ids.*' => 'nullable|integer|exists:user_lessons,id',
             'start_date' => 'required|array',
-            'start_date.*' => 'date',
+            'start_date.*' => 'required|date',
             'end_date' => 'nullable|array',
+            'delete_ids' => 'array',
         ]);
+
+        // 🔄 ユーザー情報更新
+        $user->user_name = $validated['user_name'];
+        $user->email = $validated['email'];
+        if (!empty($validated['password'])) {
+            $user->password = bcrypt($validated['password']);
+        }
+        $user->save();
 
         // 少なくとも1つのレッスンIDがあるか確認
         if (count($validated['lesson_ids']) < 1) {
             return redirect()->back()->withErrors(['lesson_ids' => '少なくとも1つのレッスンを登録してください。']);
         }
 
-        // 既存のレッスンを解除（lesson_idを他の有効なIDに更新）
-        $lessonIdToAttach = $validated['lesson_ids'][0];  // 新しいレッスンIDを選択
-
-        $lesson = Lesson::where('lesson_id', $lessonIdToAttach)->first();
-        if ($lesson) {
-            $userLesson->lesson_id = $lesson->id;
-            $userLesson->save();
+        if (!empty($validated['delete_ids'])) {
+            UserLesson::whereIn('id', $validated['delete_ids'])->delete();
+            UserLessonStatus::whereIn('user_lesson_id', $validated['delete_ids'])->delete();
         }
 
-        // 新しいレッスンを保存
-        foreach ($validated['lesson_ids'] as $index => $lessonId) {
-            $lesson = Lesson::where('lesson_id', $lessonId)->first();
-            if ($lesson) {
-                $startDate = $validated['start_date'][$index] ?? null;
-                $endDate = $validated['end_date'][$index] ?? null;
+        // レッスン情報の更新・作成
+        foreach ($validated['lesson_ids'] as $index => $lessonIdString) {
+            $lessonId = Lesson::where('lesson_id', $lessonIdString)->value('id');
+            if (!$lessonId) continue;
 
-                // end_date のバリデーションチェックを個別に行う
-                if ($endDate && $startDate && $endDate < $startDate) {
-                    return redirect()->back()->withErrors(["end_date.$index" => "終了日は開始日以降の日付を入力してください。"]);
+            $userLessonId = $validated['user_lesson_ids'][$index] ?? null;
+            $startDate = $validated['start_date'][$index];
+            $endDate = $validated['end_date'][$index] ?? null;
+
+            // 終了日チェック
+            if ($endDate && $endDate < $startDate) {
+                return redirect()->back()->withErrors(["end_date.$index" => "終了日は開始日以降の日付を入力してください。"]);
+            }
+
+            if ($userLessonId) {
+            // 📝 既存の user_lesson を更新
+                $existing = UserLesson::find($userLessonId);
+                if ($existing) {
+                    $existing->lesson_id = $lessonId;
+                    $existing->start_date = $startDate;
+                    $existing->end_date = $endDate;
+                    $existing->save();
+
+                    $this->updateUserLessonStatus($existing, $startDate, $endDate, Lesson::find($lessonId));
                 }
+            } else {
+                // ➕ 新規作成
+                $newLesson = new UserLesson();
+                $newLesson->user_id = $user->id;
+                $newLesson->lesson_id = $lessonId;
+                $newLesson->start_date = $startDate;
+                $newLesson->end_date = $endDate;
+                $newLesson->save();
 
-                // 新しいレッスンを関連付け
-                $userLesson->lesson()->associate($lesson);
-                $userLesson->start_date = $startDate;
-                $userLesson->end_date = $endDate;
-                $userLesson->save();
-
-                $this->updateUserLessonStatus($userLesson, $startDate, $endDate, $lesson);
+               // ステータス更新
+                $this->updateUserLessonStatus($userLesson, $startDate, $endDate, Lesson::find($lessonId));
             }
         }
 
-        return redirect()->route('admin.student.index')->with('success', 'レッスン情報が更新されました。');
+        return redirect()->route('admin.student.index')->with('success', '生徒情報が更新されました。');
     }
 
     private function updateUserLessonStatus(UserLesson $userLesson, $startDate, $endDate, Lesson $lesson)
     {
         // 既存の user_lesson_status を取得
-        $existingStatuses = $userLesson->userLessonStatuses;
+        $existingStatuses = $userLesson->userLessonStatus ?? collect();
 
         // user_lesson_status の更新処理
         foreach ($existingStatuses as $status) {
-           // 変更されたレッスン情報に基づいて status を更新
-            if ($lesson->id != $status->lesson_id) {
-                $status->lesson_id = $lesson->id;  // 新しいレッスンIDを設定
-            }
 
             $status->date = $startDate; // 例: 開始日に基づいて status を更新
             $status->status = '未受講'; // 必要に応じて他のステータスに変更
             $status->save();
         }
-
-        // 新しい `user_lesson_status` を追加（必要に応じて）
-        $this->generateUserLessonValues($userLesson);
     }
 
     public function showNextYear()

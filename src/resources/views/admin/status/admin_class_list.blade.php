@@ -41,6 +41,7 @@
                             {{ $lessonData['userLesson']->user->user_name }}
                             </a>
                         </td>
+
                         <td>
                             {{-- `$date` が過去で、該当の `lesson_id` が `$lessons` に含まれる場合 --}}
                             @if ($date->lt($now) && in_array($lessonData['userLesson']->lesson_id,  $lessons))
@@ -65,6 +66,8 @@
                                 @if ($lessonData['status'] === '未受講' || is_null($lessonData['status']))
                                     <form action="{{ route('admin.status.absent', ['userLessonId' => $lessonData['userLesson']->id]) }}" method="POST">
                                     @csrf
+                                    <input type="hidden" name="date" value="{{ $date->format('Y-m-d') }}">
+
                                         <button type="submit" class="absence-toggle">欠席する</button>
                                     </form>
                                 @elseif ($lessonData['status'] === '欠席する')

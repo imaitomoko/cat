@@ -65,15 +65,27 @@ class Lesson extends Model
     public function getLessonCalendar($year)
     {
         $calendar = [];
+        $daysMap = [
+            '日' => 0,
+            '月' => 1,
+            '火' => 2,
+            '水' => 3,
+            '木' => 4,
+            '金' => 5,
+            '土' => 6,
+        ];
+
+        $day1Number = $daysMap[$this->day1] ?? null;
+        $day2Number = $this->day2 ? ($daysMap[$this->day2] ?? null) : null;
+
         $start = Carbon::createFromFormat('Y-m-d', "{$year}-04-01"); // 4月1日開始
         $end = $start->copy()->addYear()->subDay(); // 翌年3月31日終了
 
         while ($start <= $end) {
             $dayOfWeek = $start->dayOfWeek; // 0:日曜, 6:土曜
-            if ($dayOfWeek == Carbon::parse($this->day1)->dayOfWeek) {
-                $calendar[$start->format('Y-m-d')] = $this->lesson_value ?? '休校';
-            } elseif ($dayOfWeek == Carbon::parse($this->day2)->dayOfWeek) {
-                $calendar[$start->format('Y-m-d')] = $this->lesson_value ?? '休校';
+
+            if ($dayOfWeek == $day1Number || $dayOfWeek == $day2Number) {
+                $calendar[$start->format('Y-m-d')] = '青①';
             } else {
                 $calendar[$start->format('Y-m-d')] = '休校';
             }

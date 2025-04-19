@@ -39,6 +39,13 @@
             <button type="submit" class="btn btn-primary">検索</button>
         </form>
     </div>
+
+    @if(session('success'))
+    <div class="alert alert-success" style="color: green;">
+        {{ session('success') }}
+    </div>
+    @endif
+
     @if(isset($lessons) && $lessons->isNotEmpty())
     
         <table class="table table-bordered">
@@ -69,7 +76,7 @@
                         <td>{{ $lesson->duration2 }}</td>
                         <td>{{ $lesson->max_number }}人</td>
                         <td>
-                            <a href="{{ route('admin.lesson.edit', $lesson->id) }}" class="btn btn-success btn-sm">編集</a>
+                            <a href="{{ route('admin.lesson.edit', ['id' => $lesson->id, 'year' => $selectedYear, 'school_id' => $selectedSchoolId]) }}" class="btn btn-success btn-sm">編集</a>
                             <form action="{{ route('admin.lesson.destroy', $lesson->id) }}" method="POST" style="display:inline-block;">
                                 @csrf
                                 @method('DELETE')

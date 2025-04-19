@@ -16,6 +16,7 @@ use App\Http\Controllers\MasterController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\AdminScheduleController;
 use App\Http\Controllers\MailController;
+use App\Http\Controllers\AdminStatusController;
 
 
 /*

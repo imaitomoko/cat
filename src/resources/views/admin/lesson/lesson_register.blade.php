@@ -63,10 +63,10 @@
                 <option value="">選択してください</option>
                 <option value="Monday" {{ old('day1') == 'Monday' ? 'selected' : '' }}>月曜日</option>
                 <option value="Tuesday" {{ old('day1') == 'Tuesday' ? 'selected' : '' }}>火曜日</option>
-                <option value="Tuesday" {{ old('day1') == 'Wednesday' ? 'selected' : '' }}>水曜日</option>
-                <option value="Tuesday" {{ old('day1') == 'Thursday' ? 'selected' : '' }}>木曜日</option>
-                <option value="Tuesday" {{ old('day1') == 'Friday' ? 'selected' : '' }}>金曜日</option>
-                <option value="Tuesday" {{ old('day1') == 'Saturday' ? 'selected' : '' }}>土曜日</option>
+                <option value="Wednesday" {{ old('day1') == 'Wednesday' ? 'selected' : '' }}>水曜日</option>
+                <option value="Thursday" {{ old('day1') == 'Thursday' ? 'selected' : '' }}>木曜日</option>
+                <option value="Friday" {{ old('day1') == 'Friday' ? 'selected' : '' }}>金曜日</option>
+                <option value="Saturday" {{ old('day1') == 'Saturday' ? 'selected' : '' }}>土曜日</option>
                 <!-- 他の曜日 -->
             </select>
             @error('day1')
@@ -96,10 +96,10 @@
                 <option value="">選択してください</option>
                 <option value="Monday" {{ old('day2') == 'Monday' ? 'selected' : '' }}>月曜日</option>
                 <option value="Tuesday" {{ old('day2') == 'Tuesday' ? 'selected' : '' }}>火曜日</option>
-                <option value="Tuesday" {{ old('day2') == 'Wednesday' ? 'selected' : '' }}>水曜日</option>
-                <option value="Tuesday" {{ old('day2') == 'Thursday' ? 'selected' : '' }}>木曜日</option>
-                <option value="Tuesday" {{ old('day2') == 'Friday' ? 'selected' : '' }}>金曜日</option>
-                <option value="Tuesday" {{ old('day2') == 'Saturday' ? 'selected' : '' }}>土曜日</option><!-- 他の曜日 -->
+                <option value="Wednesday" {{ old('day2') == 'Wednesday' ? 'selected' : '' }}>水曜日</option>
+                <option value="Thursday" {{ old('day2') == 'Thursday' ? 'selected' : '' }}>木曜日</option>
+                <option value="Friday" {{ old('day2') == 'Friday' ? 'selected' : '' }}>金曜日</option>
+                <option value="Saturday" {{ old('day2') == 'Saturday' ? 'selected' : '' }}>土曜日</option><!-- 他の曜日 -->
             </select>
             @error('day2')
             <div class="text-danger">{{ $message }}</div>

@@ -22,19 +22,30 @@
             </tr>
         </thead>
         <tbody>
+            @php
+                $now = \Carbon\Carbon::now();
+                $startDate = \Carbon\Carbon::now()->subMonth();
+                $endDate = \Carbon\Carbon::now()->addMonth();
+            @endphp
+
             @foreach ($student->userLessons as $userLesson)
-                @foreach ($userLesson->userLessonStatus as $status)
+                @php
+                   // 期間内のstatusだけに絞る
+                    $filteredStatuses = $userLesson->userLessonStatus->filter(function ($status) use ($startDate, $endDate) {
+                        return \Carbon\Carbon::parse($status->date)->between($startDate, $endDate);
+                    });
+                @endphp
+                @foreach ($filteredStatuses as $status)
                     @php
-                        $now = \Carbon\Carbon::now();
-                        $startTime = null;
                         $weekdayJapanese = \Carbon\Carbon::parse($status->date)->locale('ja')->isoFormat('ddd');
                         $lesson = $userLesson->lesson;
+                        $dateString = \Carbon\Carbon::parse($status->date)->format('Y-m-d');
 
-                       // `day1` または `day2` に基づいて `start_time1` または `start_time2` を設定
-                        if ($lesson->day1 === $weekdayJapanese) { 
-                            $startTime = \Carbon\Carbon::parse($lesson->start_time1);
-                        } elseif ($lesson->day2 === $weekdayJapanese && !empty($lesson->start_time2)) {
-                            $startTime = \Carbon\Carbon::parse($lesson->start_time2);
+                        $startTime = null;
+                        if ($lesson->day1 === $weekdayJapanese && $lesson->start_time1) {
+                            $startTime = \Carbon\Carbon::parse($dateString . ' ' . $lesson->start_time1);
+                        } elseif ($lesson->day2 === $weekdayJapanese && $lesson->start_time2) {
+                            $startTime = \Carbon\Carbon::parse($dateString . ' ' . $lesson->start_time2);
                         }
                         // 振替情報の取得
                         $reschedule = $status->reschedule;
@@ -43,7 +54,7 @@
                     <tr>
                         <td>{{ \Carbon\Carbon::parse($status->date)->locale('ja')->isoFormat('YYYY-MM-DD（ddd）') }}</td>
                         <td>
-                            @if (\Carbon\Carbon::parse($status->date)->lt($now) && (!$startTime || $startTime->lt($now)))
+                            @if (!$startTime || $startTime->lt($now))
                                 {{-- 日付が過去 & 開始時間も過去 --}}
                                 @if ($status->status === '未受講')
                                     <span>受講済み</span>
@@ -53,30 +64,34 @@
                                     <span>{{ $status->status }}</span>
                                 @endif
 
-                            @elseif (\Carbon\Carbon::parse($status->date)->gt($now) && (!$startTime || $startTime->gt($now)))
-                                {{-- 日付が未来 --}}
-                                @if ($status->status === '未受講')
-                                    <form action="{{ route('admin.status.absent', ['userLessonId' => $userLesson->id]) }}" method="POST">
+                            @elseif (!$startTime || $startTime->gt($now))
+                                @if (!is_null($status->id))
+                                    <form action="{{ route('admin.status.absent', ['userLessonId' => $userLesson->id]) }}" method="POST" style="display: inline-block;">
                                         @csrf
-                                        <select name="status" onchange="this.form.submit()">
-                                            <option value="欠席する">欠席する</option>
-                                            <option value="休会中">休会中</option>
-                                        </select>
+                                        <input type="hidden" name="date" value="{{ $status->date }}">
+                                        @switch($status->status)
+                                            @case('未受講')
+                                                <button type="submit" name="status" value="欠席する" class="btn btn-red">欠席する</button>
+                                                <button type="submit" name="status" value="休会中" class="btn-pink">休会する</button>
+                                                @break
+
+                                            @case('欠席する')
+                                                <button type="submit" name="status" value="未受講" class="btn btn-orange">欠席中止</button>
+                                                {{-- 振替ボタン（欠席時のみ表示） --}}
+                                                <a href="" class="btn btn-blue">振替</a>
+                                                @break
+
+                                            @case('休会中')
+                                                <button type="submit" name="status" value="未受講" class="btn-green">休会中止</button>
+                                                @break
+
+                                            @default
+                                                <span>{{ $status->status }}</span>
+                                        @endswitch
                                     </form>
-                                @elseif ($status->status === '欠席する')
-                                    <form action="{{ route('admin.status.absent', ['userLessonId' => $userLesson->id]) }}" method="POST">
-                                        @csrf
-                                        <button type="submit" class="absence-toggle">欠席中止</button>
-                                    </form>
-                                @elseif ($status->status === '休会中')
-                                    <form action="{{ route('admin.status.absent', ['userLessonId' => $userLesson->id]) }}" method="POST">
-                                        @csrf
-                                        <button type="submit" class="absence-toggle">休会取消</button>
-                                    </form>
-                                @else
-                                    <span>{{ $status->status }}</span>
                                 @endif
                             @endif
+
                         </td>
                         <td>
                             @if ($reschedule)
@@ -99,10 +114,12 @@
                                     </form>
                                 @endif
                             @elseif ($status->status === '欠席する' || $status->status === '未受講')
-                                <form action="{{ route('admin.status.makeup', ['user_lesson_status_id' => $lesson->userLessonStatus->id]) }}" method="GET">
-                                    @csrf
-                                    <button type="submit" class="reschedule-btn">振替予約</button>
-                                </form>
+                                @if ($status && $status->userLessonStatus && !is_null($status->userLessonStatus->id))
+                                    <form action="{{ route('admin.status.makeup', ['user_lesson_status_id' => $lesson->userLessonStatus->id]) }}" method="GET">
+                                        @csrf
+                                        <button type="submit" class="reschedule-btn">振替予約</button>
+                                    </form>
+                                @endif
                             @endif
                         </td>
                     </tr>

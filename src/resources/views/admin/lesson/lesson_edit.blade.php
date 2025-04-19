@@ -13,6 +13,8 @@
     <form class="form" action="{{ route('admin.lesson.update', $lesson->id) }}" method="POST">
         @csrf
         @method('PUT')
+        <input type="hidden" name="year" value="{{ $year }}">
+        <input type="hidden" name="school_id" value="{{ $school_id }}">
 
         <div class="form-group">
             <label for="lesson_id">レッスンID:</label>
@@ -35,7 +37,7 @@
 
         <div class="form-group">
             <label for="start_time1">開始時刻1:</label>
-            <input type="time" id="start_time1" name="start_time1" class="form-control" value="{{ $lesson->start_time1 }}">
+            <input type="time" id="start_time1" name="start_time1" class="form-control" value="{{ \Carbon\Carbon::parse($lesson->start_time1)->format('H:i') }}">
         </div>
 
         <div class="form-group">
@@ -54,7 +56,9 @@
 
         <div class="form-group">
             <label for="start_time2">開始時刻2:</label>
-            <input type="time" id="start_time2" name="start_time2" class="form-control" value="{{ $lesson->start_time2 }}">
+            <input type="time" id="start_time2" name="start_time2" class="form-control"  @if($lesson->start_time2)
+                value="{{ \Carbon\Carbon::parse($lesson->start_time2)->format('H:i') }}"
+            @endif>
         </div>
 
         <div class="form-group">
@@ -64,8 +68,18 @@
 
         <button type="submit" class="btn btn-primary">更新</button>
     </form>
+
+    @if ($errors->any())
+    <div style="color:red;">
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+    @endif
     <div class="back__button">
-        <a class="back" href="/admin/lesson/show">back</a>
+        <a class="back" href="{{ url()->previous() }}">back</a>
     </div>
 </div>
 @endsection

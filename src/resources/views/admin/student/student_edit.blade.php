@@ -19,8 +19,6 @@
     </div>
     @endif 
 
-
-
     <div class="form">
         <form action="{{ route('admin.student.update', $userLesson->id) }}" method="POST">
             @csrf
@@ -47,29 +45,36 @@
             </div>
 
             <div id="lesson-ids-container">
-                @foreach($userLesson->user->lessons as $index => $lesson)
+                @foreach($userLesson->user->userLessons as $index => $userLessonEntry)
                 <div class="lesson-group">
+                    <input type="hidden" name="user_lesson_ids[]" value="{{ $userLessonEntry->id }}">
+
                     <div class="form-group">
                         <label for="lesson_ids[]">レッスンID:</label>
-                        <input type="text" name="lesson_ids[]" class="form-control" value="{{ $lesson->lesson_id }}">
+                        <input type="text" name="lesson_ids[]" class="form-control" value="{{ old('lesson_ids.' . $index, $userLessonEntry->lesson->lesson_id) }}">
                     </div>
+
                     <div class="form-group">
                         <label for="start_date[]">開始日:</label>
-                        <input type="date" name="start_date[]" class="form-control" value="{{ old('start_date.' . $index, $lesson->start_date ?? '') }}">
+                        <input type="date" name="start_date[]" class="form-control" value="{{ old('start_date.' . $index, $userLessonEntry->start_date) }}">
                     </div>
+
                     <div class="form-group">
                         <label for="end_date[]">終了日:</label>
-                        <input type="date" name="end_date[]" class="form-control" value="{{ old('end_date.' . $index, $lesson->end_date ?? '') }}">
+                        <input type="date" name="end_date[]" class="form-control" value="{{ old('end_date.' . $index, $userLessonEntry->end_date) }}">
                     </div>
+
                     <button type="button" class="btn btn-danger btn-sm remove-lesson">レッスンの削除</button>
                 </div>
                 @endforeach
             </div>
+
             <div class="add_lesson">
                 <a id="add-lesson" class="double-underline">レッスンIDを追加</a>
             </div>
 
             <button type="submit" class="btn btn-success store">更新</button>
+            <div id="delete-ids-container"></div>
         </form>
         <div class="form-group">
             <form class="delete" action="{{ route('admin.student.destroyAll', $userLesson->user->id) }}" method="POST" style="display:inline-block;">
@@ -80,7 +85,7 @@
         </div>
     </div>
     <div class="back__button">
-        <a class="back" href="/admin/student/show">back</a>
+        <a class="back" href="{{ url()->previous() }}">back</a>
     </div>
 </div>
 
@@ -112,6 +117,7 @@
         // レッスン削除ボタンの処理
         document.addEventListener("click", function (e) {
             if (e.target.classList.contains("remove-lesson")) {
+                const lessonGroup = e.target.closest(".lesson-group");
                 const lessonGroups = document.querySelectorAll(".lesson-group");
 
                 if (lessonGroups.length <= 1) {
@@ -119,9 +125,24 @@
                     return;
                 }
 
-                e.target.closest(".lesson-group").remove();
+                // user_lesson_id があれば削除IDとして追加
+                const userLessonIdInput = lessonGroup.querySelector('input[name="user_lesson_ids[]"]');
+                if (userLessonIdInput) {
+                    const deleteIdsContainer = document.getElementById("delete-ids-container");
+
+                    const hidden = document.createElement("input");
+                    hidden.type = "hidden";
+                    hidden.name = "delete_ids[]";
+                    hidden.value = userLessonIdInput.value;
+
+                    deleteIdsContainer.appendChild(hidden);
+                }
+
+                // レッスン欄自体を削除
+                lessonGroup.remove();
             }
         });
+
 
         // すべての生徒情報を削除ボタンの処理
         document.addEventListener("click", function (e) {
