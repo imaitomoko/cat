@@ -78,7 +78,7 @@
                                             @case('欠席する')
                                                 <button type="submit" name="status" value="未受講" class="btn btn-orange">欠席中止</button>
                                                 {{-- 振替ボタン（欠席時のみ表示） --}}
-                                                <a href="" class="btn btn-blue">振替</a>
+                                                <a href="{{ route('admin.status.makeup', ['userLessonId' => $userLesson->id, 'date' => $status->date]) }}" class="btn btn-blue">振替</a>
                                                 @break
 
                                             @case('休会中')

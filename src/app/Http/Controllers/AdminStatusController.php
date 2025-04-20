@@ -13,6 +13,8 @@ use App\Models\UserLessonStatus;
 use App\Models\Reschedule;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 class AdminStatusController extends Controller
 {
@@ -185,62 +187,73 @@ class AdminStatusController extends Controller
         return back()->with('status', 'ステータスを更新しました');
     }
 
-    public function makeupShow($userLessonStatusId)
+    public function makeupShow($userLessonId, Request $request)
     {
-        $userLessonStatus = UserLessonStatus::with('userLesson.lesson')->findOrFail($userLessonStatusId);
-        $user = $userLessonStatus->userLesson->user;
-        $currentLesson = $userLessonStatus->userLesson->lesson;
+        $userLesson = UserLesson::with(['lesson.schoolClass', 'lesson.school'])->findOrFail($userLessonId);
+        $lesson = $userLesson->lesson;
+
+        $startOfYear = Carbon::createFromDate($lesson->year, 4, 1);
+        $endOfYear = $startOfYear->copy()->addYear()->subDay();
     
-        $startDate = now()->subMonth();
-        $endDate = now()->addMonth();
+        $now = Carbon::now();
+        $startDate = $now->copy()->subMonth();
+        $endDate = $now->copy()->addMonth();
 
-        if (!function_exists('getNearestDate')) {
-            function getNearestDate($japaneseDay)
-            {
-                // 日本語の曜日を Carbon の曜日番号に変換
-                $weekMap = [
-                    '日' => 0,
-                    '月' => 1,
-                    '火' => 2,
-                    '水' => 3,
-                    '木' => 4,
-                    '金' => 5,
-                    '土' => 6,
-                ];
+        $selectedSchoolId = $request->input('school_id', $lesson->school_id); // デフォルトは現在の教
 
-                if (!isset($weekMap[$japaneseDay])) {
-                     return '日付不明'; // 万が一、曜日が間違っていた場合
+         // 同じクラス・同じ年度・選ばれた教室のレッスン（自身を除く）
+        $otherLessons = Lesson::where('year', $lesson->year)
+            ->where('class_id', $lesson->class_id)
+            ->where('school_id', $selectedSchoolId)
+            ->where('id', '!=', $lesson->id)
+            ->get();
+
+        // 他の教室一覧（自分の教室以外）
+        $otherSchools = School::where('id', '!=', $lesson->school_id)->get();
+
+        // 候補日の生成
+        $rescheduleCandidates = collect();
+        foreach ($otherLessons as $otherLesson) {
+            foreach ([$otherLesson->day1, $otherLesson->day2] as $day) {
+                if (!$day) continue;
+                $date = Carbon::parse($startDate);
+                while ($date->lte($endDate)) {
+                    if ($date->isoFormat('ddd') === $day && $date->between($startOfYear, $endOfYear)) {
+                        $start_time = ($day === $otherLesson->day1) ? $otherLesson->start_time1 : $otherLesson->start_time2;
+                        $rescheduleCandidates->push([
+                            'date' => $date->copy(),
+                            'weekday' => $day,
+                            'start_time' => $start_time,
+                            'lesson_id' => $otherLesson->id,
+                        ]);
+                    }
+                    $date->addDay();
                 }
-
-                // 今日の日付
-                $today = Carbon::today();
-
-                // 次に来る該当曜日の日付を取得
-                $targetDate = $today->copy()->next($weekMap[$japaneseDay]);
-
-                 // m/d 形式で返す
-                return $targetDate->format('m/d');
             }
         }
 
-        // そのクラスの別の曜日で、かつユーザーがまだ受講していないレッスンを取得
-        $availableLessons = Lesson::where('school_class_id', $currentLesson->school_class_id)
-            ->whereBetween('start_date', [$startDate, $endDate])
-            ->where(function ($query) use ($currentLesson) {
-                $query->where('day1', '!=', $currentLesson->day1)
-                        ->orWhere('day2', '!=', $currentLesson->day1);
-            })
-            ->whereDoesntHave('userLessons.userLessonStatus', function ($query) use ($user) {
-                $query->where('user_id', $user->id);
-            })
-            ->get();
+        // 日付で昇順にソート
+        $sorted = $rescheduleCandidates->sortBy('date')->values();
 
-        // そのクラスがある他の教室を取得
-        $otherSchools = School::whereHas('classes', function ($query) use ($currentLesson) {
-            $query->where('id', $currentLesson->school_class_id);
-        })->get();
+        $page = request()->get('page', 1);
+        $perPage = 10;
 
-        return view('admin.reschedule.form', compact('userLessonStatus', 'availableLessons', 'otherSchools', 'user'));
+        $sorted = $rescheduleCandidates->sortBy('date')->values();
+
+        $paginator = new LengthAwarePaginator(
+            $sorted->forPage($page, $perPage),
+            $sorted->count(),
+            $perPage,
+            $page,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
+
+        return view('admin.status.admin_makeup', [
+            'userLesson' => $userLesson,
+            'rescheduleCandidates' => $paginator,
+            'otherSchools' => $otherSchools,
+            'selectedSchoolId' => $selectedSchoolId, // 選択状態保持用
+        ]);
     }
 
     public function reschedule(Request $request)
