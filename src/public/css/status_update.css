@@ -55,6 +55,16 @@ th {
     transition: background-color 0.3s ease;
 }
 
+.closed_button {
+    padding: 6px 12px;
+    background-color: rgb(178, 178, 226);
+    border: none;
+    border-radius: 3px;
+    color: white;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
 
 .pagination {
     display: flex;

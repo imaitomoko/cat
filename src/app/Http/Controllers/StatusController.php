@@ -110,7 +110,7 @@ class StatusController extends Controller
             'user',
             'lesson.school',
             'lesson.schoolClass',
-            'userLessonStatus.reschedule',
+            'userLessonStatus.reschedule.lesson',
         ])->findOrFail($user_lesson_id);
 
         $user = $userLesson->user;
@@ -210,10 +210,11 @@ class StatusController extends Controller
                 while ($date->lte($endDate)) {
                     if ($date->isoFormat('ddd') === $day && $date->between($startOfYear, $endOfYear)) {
                         $start_time = ($day === $otherLesson->day1) ? $otherLesson->start_time1 : $otherLesson->start_time2;
+                        $startDateTime = $date->copy()->setTimeFromTimeString($start_time);
                         $rescheduleCandidates->push([
                             'date' => $date->copy(),
                             'weekday' => $day,
-                            'start_time' => $start_time,
+                            'start_time' => $startDateTime,
                             'lesson_id' => $otherLesson->id,
                         ]);
                     }

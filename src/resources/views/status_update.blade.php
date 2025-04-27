@@ -45,7 +45,11 @@
                                 <input type="hidden" name="date" value="{{ $item['date'] }}">
                                 <input type="hidden" name="lesson_id" value="{{ $item['lesson_id'] }}">
                                 <input type="hidden" name="status_id" value="{{ $statusId }}">
-                                <button class ="button" type="submit">振替</button>
+                                @if($item['start_time']->isFuture())
+                                    <button class="button" type="submit">振替</button>
+                                @else
+                                    <button class="closed_button" type="button" disabled>締切</button>
+                                @endif
                             </form>
                         </td>
                     </tr>

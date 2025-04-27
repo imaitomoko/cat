@@ -96,14 +96,23 @@
 
                         </td>
                         <td>
-                            @if ($status->reschedule_to)
+                            @if ($status->reschedule_to && $status->reschedule && $status->reschedule->lesson)
                                 @php
                                     $rescheduleDate = \Carbon\Carbon::parse($status->reschedule_to);
+                                    $rescheduleWeekday = $rescheduleDate->locale('ja')->isoFormat('ddd');
+                                    $rescheduleLesson = $status->reschedule->lesson;
+
+                                    $rescheduleStartTime = null;
+                                    if ($rescheduleLesson->day1 === $rescheduleWeekday && $rescheduleLesson->start_time1) {
+                                        $rescheduleStartTime = \Carbon\Carbon::parse($rescheduleDate->format('Y-m-d') . ' ' . $rescheduleLesson->start_time1);
+                                    } elseif ($rescheduleLesson->day2 === $rescheduleWeekday && $rescheduleLesson->start_time2) {
+                                        $rescheduleStartTime = \Carbon\Carbon::parse($rescheduleDate->format('Y-m-d') . ' ' . $rescheduleLesson->start_time2);
+                                    }
                                 @endphp
                                 @if ($rescheduleDate->lt($now))
-                                    <span>振替済み（{{ $rescheduleDate->format('Y-m-d') }}）</span>
+                                    <span>振替済み ({{ $rescheduleDate->format('m-d') }} {{ $rescheduleWeekday }} {{ $rescheduleStartTime ? $rescheduleStartTime->format('H:i') : '' }})</span>
                                 @else
-                                    <span>振替予定 ({{ $rescheduleDate->format('Y-m-d') }}) </span>
+                                    <span>振替予定 ({{ $rescheduleDate->format('m-d') }} {{ $rescheduleWeekday }} {{ $rescheduleStartTime ? $rescheduleStartTime->format('H:i') : '' }}) </span>
                                     <!-- 振替キャンセルボタン -->
                                     <form action="{{ route('reschedule.cancel', ['rescheduleId' => $reschedule->id]) }}" method="POST" onsubmit="return confirm('本当に振替をキャンセルしますか？');">
                                     @csrf
@@ -113,7 +122,7 @@
                                 @endif
 
                             @elseif ($status->status === '欠席する')
-                                <a href="{{ route('status.makeup', ['userLessonId' => $userLesson->id, 'date' => $status->date, 'status_id' => $status->id]) }}" class="btn btn-blue">振替</a>
+                                <a href="{{ route('status.makeup', ['userLessonId' => $userLesson->id, 'date' => $status->date, 'status_id' => $status->id]) }}" class="btn btn-blue">振替予約</a>
                             @else
                                 <span>-</span>
                             @endif
