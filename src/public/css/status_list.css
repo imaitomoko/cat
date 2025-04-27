@@ -10,15 +10,15 @@
 
 .user {
     display: flex;
-    text-align: center;
-    width: 50%;
-    margin: 10px auto;
-    justify-content: space-between;
+    justify-content: center;
+    gap: 20px;
+    padding: 10px;
+
 }
 
 .user_inner {
-    font-size: 20px;
-    color: #4f4c4c;
+    margin: 0;
+    font-size: 18px;
 }
 
 table {
@@ -38,7 +38,79 @@ th {
     color: #fff;
 }
 
-.back__button {
+.btn {
+    display: inline-block;
+    width: 100px;
+    padding: 6px 12px;
+    text-align: center;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    color: #fff;
+    cursor: pointer;
+    margin: 2px;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.btn-red {
+    background-color: #e3342f;
+    /* 赤 */
+}
+
+.btn-blue {
+    background-color: #0000FF;
+    /* 青 */
+}
+
+.btn-orange {
+    background-color: #FFA500;
+    /* オレンジ */
+}
+
+.btn-lightblue {
+    background-color: cadetblue;
+}
+
+.btn-pink {
+    display: inline-block;
+    width: 100px;
+    padding: 6px 12px;
+    text-align: center;
+    border: solid 2px #FF00FF;
+    border-radius: 5px;
+    font-size: 14px;
+    color: #FF00FF;
+    cursor: pointer;
+    margin: 2px;
+    font-weight: bold;
+    text-decoration: none;
+    /* ピンク */
+    background-color: #f8eaed;
+}
+
+.btn-green {
+    display: inline-block;
+    width: 100px;
+    padding: 6px 12px;
+    text-align: center;
+    border: solid 2px #1cdc15;
+    border-radius: 5px;
+    font-size: 14px;
+    color: #1cdc15;
+    cursor: pointer;
+    margin: 2px;
+    font-weight: bold;
+    text-decoration: none;
+    /* ピンク */
+    background-color: #f8faf8;
+}
+
+.btn:hover {
+    opacity: 0.85;
+}
+
+</style>.back__button {
     text-align: center;
     align-items: center;
     position: fixed;

@@ -54,4 +54,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(UserLesson::class, 'user_id');
     }
+
+    public function reschedules()
+    {
+        return $this->hasMany(Reschedule::class);
+    }
+
 }

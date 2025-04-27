@@ -37,9 +37,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/schedule/list', [ScheduleController::class, 'show'])->name('schedule.list');
     Route::get('/schedule/search', [ScheduleController::class, 'search'])->name('schedule.search');
     Route::get('/status', [StatusController::class, 'index']);
-    Route::get('status/list', [StatusController::class, 'show'])->name('status.list');
-    Route::post('/status/absence/confirm', [StatusController::class, 'confirmAbsence'])->name('status.absence.confirm');
-    Route::post('/status/absence/store', [StatusController::class, 'storeAbsence'])->name('status.absence.store');
+    Route::get('status/list/{user_lesson_id}', [StatusController::class, 'show'])->name('status.list');
+    Route::post('/status/absence/confirm/{userLessonId}', [StatusController::class, 'confirmAbsence'])->name('status.absence.confirm');
+
+    Route::get('/status/makeup/{userLessonId}', [StatusController::class, 'makeupShow'])->name('status.makeup');
+    Route::post('/makeup/update/{userLessonId}', [StatusController::class, 'makeupUpdate'])->name('makeup.update');
+    Route::delete('/reschedule/cancel/{rescheduleId}', [StatusController::class, 'cancelReschedule'])->name('reschedule.cancel');
+    
+        Route::post('/status/absence/store', [StatusController::class, 'storeAbsence'])->name('status.absence.store');
 
 });
 
@@ -121,6 +126,7 @@ Route::middleware(['auth:admin'])->group(function () {
 
         Route::get('/status/makeup/{userLessonId}', [AdminStatusController::class, 'makeupShow'])->name('status.makeup');
         Route::post('/makeup/update/{userLessonId}', [AdminStatusController::class, 'makeupUpdate'])->name('makeup.update');
+        Route::delete('/reschedule/cancel/{rescheduleId}', [AdminStatusController::class, 'cancelReschedule'])->name('reschedule.cancel');
     });
 
     Route::prefix('admin')->name('admin.')->group(function () {

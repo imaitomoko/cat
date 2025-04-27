@@ -187,8 +187,23 @@ class AdminStatusController extends Controller
         return back()->with('status', 'ステータスを更新しました');
     }
 
+    // 振替キャンセル処理
+    public function cancelReschedule($rescheduleId)
+    {
+        $reschedule = Reschedule::findOrFail($rescheduleId);
+
+        // reschedule_to カラムを null にする
+        $reschedule->originalLessonStatus->update(['reschedule_to' => null]);
+
+        // reschedules テーブルから削除
+        $reschedule->delete();
+
+        return redirect()->route('admin.status.search')->with('success', '振替をキャンセルしました');
+    }
+
     public function makeupShow($userLessonId, Request $request)
     {
+        $statusId = $request->input('status_id');
         $userLesson = UserLesson::with(['lesson.schoolClass', 'lesson.school'])->findOrFail($userLessonId);
         $lesson = $userLesson->lesson;
 
@@ -196,7 +211,7 @@ class AdminStatusController extends Controller
         $endOfYear = $startOfYear->copy()->addYear()->subDay();
     
         $now = Carbon::now();
-        $startDate = $now->copy()->subMonth();
+        $startDate = $now->copy();
         $endDate = $now->copy()->addMonth();
 
         $selectedSchoolId = $request->input('school_id', $lesson->school_id); // デフォルトは現在の教
@@ -238,8 +253,6 @@ class AdminStatusController extends Controller
         $page = request()->get('page', 1);
         $perPage = 10;
 
-        $sorted = $rescheduleCandidates->sortBy('date')->values();
-
         $paginator = new LengthAwarePaginator(
             $sorted->forPage($page, $perPage),
             $sorted->count(),
@@ -253,39 +266,40 @@ class AdminStatusController extends Controller
             'rescheduleCandidates' => $paginator,
             'otherSchools' => $otherSchools,
             'selectedSchoolId' => $selectedSchoolId, // 選択状態保持用
+            'statusId' => $statusId,
         ]);
     }
 
-    public function reschedule(Request $request)
+    public function makeupUpdate(Request $request, $userLessonId)
     {
-        $validated = $request->validate([
-            'user_lesson_status_id' => 'required|exists:user_lesson_statuses,id',
-            'new_lesson_id' => 'required|exists:lessons,id',
+        $request->validate([
+            'date' => 'required|date',
+            'lesson_id' => 'required|integer|exists:lessons,id',
+            'status_id' => 'required|integer|exists:user_lesson_statuses,id',
         ]);
 
-        $originalLessonStatus = UserLessonStatus::findOrFail($validated['user_lesson_status_id']);
-        $newLesson = Lesson::findOrFail($validated['new_lesson_id']);
+        // status_id から取得
+        $status = UserLessonStatus::findOrFail($request->status_id);
 
-        // 振替先の UserLesson を取得または作成
+        // reschedule_to に振替日だけ保存
+        $status->reschedule_to = $request->date;
+        $status->save();
+
         $newUserLesson = UserLesson::firstOrCreate([
-            'user_id' => $originalLessonStatus->userLesson->user_id,
-            'lesson_id' => $newLesson->id,
+            'user_id' => $status->userLesson->user_id,
+            'lesson_id' => $request->lesson_id,
+        ], [
+            'start_date' => now(),
+            'end_date' => now()->addMonth(),
         ]);
 
-        // 新しい UserLessonStatus を作成
-        $newUserLessonStatus = UserLessonStatus::create([
-            'user_lesson_id' => $newUserLesson->id,
-            'date' => $newLesson->start_date,
-            'status' => '振替',
-        ]);
-
-        // Reschedule モデルを保存（振替情報を記録）
-        Reschedule::create([
-            'user_lesson_status_id' => $originalLessonStatus->id,
+        Reschedule::firstOrCreate([
+            'user_lesson_status_id' => $status->id,
             'new_user_lesson_id' => $newUserLesson->id,
         ]);
 
-        return redirect()->route('admin.status.makeup')->with('success', '振替予約が完了しました。');
+        return redirect()->route('admin.student.detail', ['id' => $status->userLesson->user_id])
+    ->with('success', '振替を登録しました');
     }
 
 

@@ -39,10 +39,11 @@
                         <td>{{ \Carbon\Carbon::parse($item['date'])->format('Y-m-d')}} ({{ $item['weekday'] }})</td>
                         <td>{{ \Carbon\Carbon::parse($item['start_time'])->format('H:i') }}</td>
                         <td>
-                            <form class ="reschedule-button" action="{{ route('admin.makeup.update', ['userLessonId' => $userLesson->id]) }}" method="POST">
+                            <form  action="{{ route('admin.makeup.update', ['userLessonId' => $userLesson->id]) }}" method="POST">
                                 @csrf
                                 <input type="hidden" name="date" value="{{ $item['date'] }}">
                                 <input type="hidden" name="lesson_id" value="{{ $item['lesson_id'] }}">
+                                <input type="hidden" name="status_id" value="{{ $statusId }}">
                                 <button class ="button" type="submit">振替</button>
                             </form>
                         </td>

@@ -12,6 +12,11 @@
             {{ $student->user_name }} さん
         </h2>
     </div>
+    @if (session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
 
     <table>
         <thead>
@@ -77,8 +82,6 @@
 
                                             @case('欠席する')
                                                 <button type="submit" name="status" value="未受講" class="btn btn-orange">欠席中止</button>
-                                                {{-- 振替ボタン（欠席時のみ表示） --}}
-                                                <a href="{{ route('admin.status.makeup', ['userLessonId' => $userLesson->id, 'date' => $status->date]) }}" class="btn btn-blue">振替</a>
                                                 @break
 
                                             @case('休会中')
@@ -94,32 +97,26 @@
 
                         </td>
                         <td>
-                            @if ($reschedule)
+                            @if ($status->reschedule_to)
                                 @php
-                                    $rescheduleDate = \Carbon\Carbon::parse($rescheduledLesson->lesson->start_time1);
+                                    $rescheduleDate = \Carbon\Carbon::parse($status->reschedule_to);
                                 @endphp
                                 @if ($rescheduleDate->lt($now))
                                     <span>振替済み（{{ $rescheduleDate->format('Y-m-d') }}）</span>
                                 @else
-                                    <span>振替予定（{{ $rescheduleDate->format('Y-m-d') }}）</span>
-                                    <!-- 振替変更ボタン -->
-                                    <form action="{{ route('admin.reschedule.edit', ['rescheduleId' => $reschedule->id]) }}" method="GET">
-                                        <button type="submit" class="reschedule-edit-btn">振替変更</button>
-                                    </form>
+                                    <span>振替予定 ({{ $rescheduleDate->format('Y-m-d') }}) </span>
                                     <!-- 振替キャンセルボタン -->
                                     <form action="{{ route('admin.reschedule.cancel', ['rescheduleId' => $reschedule->id]) }}" method="POST" onsubmit="return confirm('本当に振替をキャンセルしますか？');">
                                     @csrf
                                     @method('DELETE')
-                                        <button type="submit" class="reschedule-cancel-btn">振替キャンセル</button>
+                                        <button type="submit" class="btn btn-lightblue">振替中止</button>
                                     </form>
                                 @endif
-                            @elseif ($status->status === '欠席する' || $status->status === '未受講')
-                                @if ($status && $status->userLessonStatus && !is_null($status->userLessonStatus->id))
-                                    <form action="{{ route('admin.status.makeup', ['user_lesson_status_id' => $lesson->userLessonStatus->id]) }}" method="GET">
-                                        @csrf
-                                        <button type="submit" class="reschedule-btn">振替予約</button>
-                                    </form>
-                                @endif
+
+                            @elseif ($status->status === '欠席する')
+                                <a href="{{ route('admin.status.makeup', ['userLessonId' => $userLesson->id, 'date' => $status->date, 'status_id' => $status->id]) }}" class="btn btn-blue">振替</a>
+                            @else
+                                <span>-</span>
                             @endif
                         </td>
                     </tr>

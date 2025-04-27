@@ -9,15 +9,25 @@ class Reschedule extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_lesson_status_id', 'new_user_lesson_id'];
+    protected $fillable = [
+        'user_lesson_status_id',
+        'lesson_id',
+        'user_id',
+    ];
 
     public function originalLessonStatus()
     {
         return $this->belongsTo(UserLessonStatus::class, 'user_lesson_status_id');
     }
 
-    public function newUserLesson()
+    public function lesson()
     {
-        return $this->belongsTo(UserLesson::class, 'new_user_lesson_id');
+        return $this->belongsTo(Lesson::class);
     }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
 }

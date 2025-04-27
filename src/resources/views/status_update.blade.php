@@ -5,27 +5,61 @@
 @endsection
 
 @section('content')
-
 <div class="content">
-    <div class="ttl">
-        <h2>欠席確認</h2>
+    <div class="heading">
+        <h2>{{ $userLesson->lesson->school->school_name ?? '学校情報なし' }} - 
+            {{ $userLesson->lesson->schoolClass->class_name ?? 'クラス情報なし' }} - 
+            {{ $userLesson->user->user_name }} さん
+        </h2>
+    </div>
+
+    <div class="school">
+        <form method="GET" action="{{ route('status.makeup', ['userLessonId' => $userLesson->id]) }}">
+            @csrf
+            <label for="school">その他の教室はこちらから:</label>
+            <select name="school_id" id="school" onchange="this.form.submit()">
+                <option value="{{ $userLesson->lesson->school_id }}">現在の教室</option>
+                @foreach ($otherSchools as $school)
+                    <option value="{{ $school->id }}" {{ $selectedSchoolId == $school->id ? 'selected' : '' }}>{{ $school->school_name }}</option>
+                @endforeach
+            </select>
+        </form>
     </div>
     <div>
-        <p>学校: {{ $lesson->school->school_name }}</p>
-        <p>クラス: {{ $lesson->schoolClass->class_name }}</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>日付（曜日）</th>
+                    <th>時間</th>
+                    <th>選択</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($rescheduleCandidates as $item)
+                    <tr>
+                        <td>{{ \Carbon\Carbon::parse($item['date'])->format('Y-m-d')}} ({{ $item['weekday'] }})</td>
+                        <td>{{ \Carbon\Carbon::parse($item['start_time'])->format('H:i') }}</td>
+                        <td>
+                            <form  action="{{ route('makeup.update', ['userLessonId' => $userLesson->id]) }}" method="POST">
+                                @csrf
+                                <input type="hidden" name="date" value="{{ $item['date'] }}">
+                                <input type="hidden" name="lesson_id" value="{{ $item['lesson_id'] }}">
+                                <input type="hidden" name="status_id" value="{{ $statusId }}">
+                                <button class ="button" type="submit">振替</button>
+                            </form>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
     </div>
-    <p>以下の授業を欠席しますか？</p>
-    <ul>
-        <li>日付: {{ $lesson->date }}</li>
-        <li>時間: {{ $lesson->start_time }}</li>
-    </ul>
-    <form method="POST" action="{{ route('status.absence.store') }}">
-        @csrf
-        <input type="hidden" name="user_lesson_id" value="{{ $userLesson->id }}">
-        <button type="submit" class="btn btn-danger">欠席を確定する</button>
-    </form>
+    <div class="pagination">
+        {{ $rescheduleCandidates->links() }}
+    </div>
+
     <div class="back__button">
         <a class="back" href="{{ url()->previous() }}">back</a>
     </div>
 </div>
+
 @endsection

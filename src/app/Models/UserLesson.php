@@ -49,21 +49,6 @@ class UserLesson extends Model
         return true;
     }
 
-    public function rescheduledFrom()
-    {
-        return $this->hasOne(Reschedule::class, 'new_user_lesson_id');
-    }
-
-    public function reschedule()
-    {
-        return $this->hasOne(Reschedule::class, 'user_lesson_status_id');
-    }
-
-    public function newUserLesson()
-    {
-        return $this->hasOne(UserLesson::class, 'id', 'new_user_lesson_id');
-    }
-
     public function sendTos()
     {
         return $this->hasMany(SendTo::class);

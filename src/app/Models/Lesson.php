@@ -100,6 +100,9 @@ class Lesson extends Model
         return $this->hasMany(LessonValue::class);
     }
 
-    
+    public function reschedules()
+    {
+        return $this->hasMany(Reschedule::class);
+    }
 
 }
