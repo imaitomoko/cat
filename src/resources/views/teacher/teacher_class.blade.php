@@ -27,9 +27,9 @@
         </form>
         @if ($selectedSchool)
         <div class="navigation">
-            <a href="{{ route('teacher.classSearch.date', ['date' => $previousDate->format('Y-m-d'), 'school_id' => $selectedSchool->id]) }}"><< previous day</a>
+            <a href="{{ route('teacher.classSearch.date', ['date' => $previousDate->format('Y-m-d')]) }}?school_id={{ $selectedSchool->id  }}"><< previous day</a>
             <h3>{{ $selectedSchool->en_school_name }} - {{ $currentDate->format('Y/m/d') }}</h3>
-            <a href="{{ route('teacher.classSearch.date', ['date' => $nextDate->format('Y-m-d'), 'school_id' => $selectedSchool->id]) }}">next day >></a>
+            <a href="{{ route('teacher.classSearch.date', ['date' => $nextDate->format('Y-m-d')]) }}?school_id={{ $selectedSchool->id }}">next day >></a>
         </div>
 
         <!-- 授業情報 -->
@@ -45,7 +45,7 @@
                     <tr>
                         <td>{{ date('H:i', strtotime($lesson->start_time1 ?? $lesson->start_time2)) }}</td>
                         <td>
-                            <a href="" class="class-button">
+                            <a href="{{ route('teacher.class.list', ['lesson' => $lesson->id, 'date' => $currentDate->format('Y-m-d')]) }}" class="class-button">
                                 {{ $lesson->schoolClass->class_name }}
                             </a>
                         </td>
@@ -61,7 +61,7 @@
     </div>
     
     <div class="back__button">
-        <a class="back" href="/teacher">back</a>
+        <a class="back" href="{{ url()->previous() }}">back</a>
     </div>
 </div>
 @endsection

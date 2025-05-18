@@ -10,6 +10,7 @@ use App\Models\SchoolClass;
 use App\Models\UserLesson;
 use App\Models\User;
 use App\Models\UserLessonStatus;
+use App\Models\LessonValue;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
 
@@ -53,7 +54,6 @@ class StudentController extends Controller
                     'lesson_id' => $lessonModel->id,
                     'start_date' => $lesson['start_date'],
                     'end_date' => $lesson['end_date'],
-                    'status' => '未受講', // status をデフォルトで「未受講」に設定
                 ]);
                 $this->generateUserLessonStatuses($userLesson);
             }
@@ -189,7 +189,8 @@ class StudentController extends Controller
             'start_date' => 'required|array',
             'start_date.*' => 'required|date',
             'end_date' => 'nullable|array',
-            'delete_ids' => 'array',
+            'delete_ids' => 'nullable|array',
+            'delete_ids.*' => 'integer|exists:user_lessons,id',
         ]);
 
         // 🔄 ユーザー情報更新
@@ -206,15 +207,16 @@ class StudentController extends Controller
         }
 
         if (!empty($validated['delete_ids'])) {
-            UserLesson::whereIn('id', $validated['delete_ids'])->delete();
             UserLessonStatus::whereIn('user_lesson_id', $validated['delete_ids'])->delete();
+            UserLesson::whereIn('id', $validated['delete_ids'])->delete();
         }
 
         // レッスン情報の更新・作成
         foreach ($validated['lesson_ids'] as $index => $lessonIdString) {
-            $lessonId = Lesson::where('lesson_id', $lessonIdString)->value('id');
-            if (!$lessonId) continue;
+            $lessonModel = Lesson::where('lesson_id', $lessonIdString)->first();
+            if (!$lessonModel) continue;
 
+            $lessonId = $lessonModel->id;
             $userLessonId = $validated['user_lesson_ids'][$index] ?? null;
             $startDate = $validated['start_date'][$index];
             $endDate = $validated['end_date'][$index] ?? null;
@@ -233,7 +235,7 @@ class StudentController extends Controller
                     $existing->end_date = $endDate;
                     $existing->save();
 
-                    $this->updateUserLessonStatus($existing, $startDate, $endDate, Lesson::find($lessonId));
+                    $this->updateUserLessonStatus($existing, $startDate, $endDate, $lessonModel);
                 }
             } else {
                 // ➕ 新規作成
@@ -245,7 +247,7 @@ class StudentController extends Controller
                 $newLesson->save();
 
                // ステータス更新
-                $this->updateUserLessonStatus($userLesson, $startDate, $endDate, Lesson::find($lessonId));
+                $this->updateUserLessonStatus($newLesson, $startDate, $endDate, $lessonModel);
             }
         }
 
@@ -254,15 +256,31 @@ class StudentController extends Controller
 
     private function updateUserLessonStatus(UserLesson $userLesson, $startDate, $endDate, Lesson $lesson)
     {
-        // 既存の user_lesson_status を取得
-        $existingStatuses = $userLesson->userLessonStatus ?? collect();
+        if ($endDate) {
+            $dates = LessonValue::where('lesson_id', $lesson->id)
+                ->whereBetween('date', [$startDate, $endDate])
+                ->pluck('date');
+            UserLessonStatus::where('user_lesson_id', $userLesson->id)
+                ->where('date', '>', $endDate)
+                ->delete();
+        } else {
+            $dates = LessonValue::where('lesson_id', $lesson->id)
+                ->whereDate('date', '>=', $startDate)
+                ->pluck('date');
+            UserLessonStatus::where('user_lesson_id', $userLesson->id)->delete();
+        }
 
-        // user_lesson_status の更新処理
-        foreach ($existingStatuses as $status) {
+        $existingDates = UserLessonStatus::where('user_lesson_id', $userLesson->id)->pluck('date')->toArray();
 
-            $status->date = $startDate; // 例: 開始日に基づいて status を更新
-            $status->status = '未受講'; // 必要に応じて他のステータスに変更
-            $status->save();
+        // 3. 新たにステータスを登録
+        foreach ($dates as $date) {
+            if (!in_array($date, $existingDates)) {
+                UserLessonStatus::create([
+                    'user_lesson_id' => $userLesson->id,
+                    'date' => $date,
+                    'status' => '未受講',
+                ]);
+            }
         }
     }
 
@@ -345,12 +363,37 @@ class StudentController extends Controller
 
     private function addUserLessonStatus(UserLesson $userLesson, $startDate)
     {
-         // user_lesson_status を作成
-        UserLessonStatus::create([
-            'user_lesson_id' => $userLesson->id,
-            'date' => $startDate->toDateString(), // start_date を基に日付を設定
-            'status' => '未受講', // 初期状態は「未受講」
-        ]);
+        $lesson = Lesson::find($userLesson->lesson_id);
+
+        // 年度の終了日（翌年3月31日）
+        $endDate = $startDate->copy()->addYear()->subDay(); // 4/1〜翌年3/31
+
+        $weekdayMap = [
+            '日' => 0, '月' => 1, '火' => 2, '水' => 3,
+            '木' => 4, '金' => 5, '土' => 6,
+        ];
+
+        $targetWeekdays = [];
+        if (!empty($lesson->day1) && isset($weekdayMap[$lesson->day1])) {
+            $targetWeekdays[] = $weekdayMap[$lesson->day1];
+        }
+        if (!empty($lesson->day2) && isset($weekdayMap[$lesson->day2])) {
+            $targetWeekdays[] = $weekdayMap[$lesson->day2];
+        }
+
+        if (empty($targetWeekdays)) return;
+
+        $currentDate = $startDate->copy();
+        while ($currentDate <= $endDate) {
+            if (in_array($currentDate->dayOfWeek, $targetWeekdays)) {
+                UserLessonStatus::create([
+                    'user_lesson_id' => $userLesson->id,
+                    'date' => $currentDate->toDateString(),
+                    'status' => '未受講',
+                ]);
+            }
+            $currentDate->addDay();
+        }
     }
     //
 }

@@ -70,10 +70,10 @@
             </div>
 
             <div class="add_lesson">
-                <a id="add-lesson" class="double-underline">レッスンIDを追加</a>
+                <a id="add-lesson" class="double-underline">他のレッスンIDを追加</a>
             </div>
 
-            <button type="submit" class="btn btn-success store">更新</button>
+            <button type="submit" class="btn btn-success store">更新確定</button>
             <div id="delete-ids-container"></div>
         </form>
         <div class="form-group">

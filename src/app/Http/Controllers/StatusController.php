@@ -152,6 +152,13 @@ class StatusController extends Controller
                 $userLessonStatus->status = '欠席する';
             }
         }
+        if ($newStatus === '未受講') {
+            if ($userLessonStatus->reschedule_to) {
+                Reschedule::where('user_lesson_status_id', $userLessonStatus->id)->delete();
+                $userLessonStatus->reschedule_to = null;
+            }
+        }
+        
         $userLessonStatus->status = $newStatus;
 
         $userLessonStatus->save();

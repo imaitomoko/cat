@@ -11,9 +11,9 @@
         <h2>予約状況一覧</h2>
     </div>
     <div class="user">
-        <p class="user_inner">{{ $userLesson->lesson->school->school_name }}</p>
-        <p class="user_inner">{{ $userLesson->lesson->schoolClass->class_name }}</p>
-        <p class="user_inner">{{ Auth::user()->user_name }}さん </p>
+        <h3 class="user_inner">{{ $userLesson->lesson->school->school_name }}</h3>
+        <h3 class="user_inner">{{ $userLesson->lesson->schoolClass->class_name }}</h3>
+        <h3 class="user_inner">{{ Auth::user()->user_name }}さん </h3>
     </div>
 
     @if (session('success'))
@@ -108,8 +108,17 @@
                                     } elseif ($rescheduleLesson->day2 === $rescheduleWeekday && $rescheduleLesson->start_time2) {
                                         $rescheduleStartTime = \Carbon\Carbon::parse($rescheduleDate->format('Y-m-d') . ' ' . $rescheduleLesson->start_time2);
                                     }
+                                    $isPast = false;
+
+                                    if ($rescheduleStartTime) {
+                                        // 振替の開始日時が現在日時より前なら「過去」
+                                        $isPast = $rescheduleStartTime->lt($now);
+                                    } else {
+                                       // start_time情報がない場合は日付のみで判定（今日より前の日付は過去とみなす）
+                                        $isPast = $rescheduleDate->lt($now->startOfDay());
+                                    }
                                 @endphp
-                                @if ($rescheduleDate->lt($now))
+                                @if ($isPast)
                                     <span>振替済み ({{ $rescheduleDate->format('m-d') }} {{ $rescheduleWeekday }} {{ $rescheduleStartTime ? $rescheduleStartTime->format('H:i') : '' }})</span>
                                 @else
                                     <span>振替予定 ({{ $rescheduleDate->format('m-d') }} {{ $rescheduleWeekday }} {{ $rescheduleStartTime ? $rescheduleStartTime->format('H:i') : '' }}) </span>

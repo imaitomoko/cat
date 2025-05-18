@@ -17,10 +17,16 @@ class NoticeController extends Controller
     public function store(Request $request)
     {
         $request->validate([
+            'post_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:post_date',
             'news_list' => 'required|string',
         ]);
 
-        NewsList::create($request->only('news_list'));
+        NewsList::create([
+            'news_list' => $request->input('news_list'),
+            'post_date' => $request->input('post_date'),
+            'end_date' => $request->input('end_date'),
+        ]);
 
         return redirect()->route('notices.index')->with('success', 'お知らせを登録しました。');
     }

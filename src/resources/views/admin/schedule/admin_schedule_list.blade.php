@@ -33,7 +33,10 @@
 
     <form action="{{ route('admin.schedule.update', ['lessonId' => $lessons->first()->id ?? '']) }}" method="POST">
         @csrf
-        
+        <input type="hidden" name="month" value="{{ $selectedMonth }}">
+        <input type="hidden" name="year" value="{{ $selectedYear }}">
+
+
         <table>
             <thead>
                 <tr>
@@ -127,6 +130,9 @@
                 </tr>
             </tbody>
         </table>
+        <div class="comment">
+            <textarea name="comment" id="comment" cols="30" rows="3">{{ old('comment', $comment->body ?? '') }}</textarea>
+        </div>
         <button type="submit" class="btn btn-success">確定</button>
     </form>
    

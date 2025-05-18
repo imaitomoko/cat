@@ -39,6 +39,16 @@ class TeacherAuthController extends Controller
         ]);
     }
 
+    public function logout(Request $request)
+    {
+        Auth::guard('teacher')->logout(); // guardを使っている場合
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('teacher.login');
+    }
+
+
     public function index()
     {
         $teacherName = Auth::guard('teacher')->user()->teacher_name;

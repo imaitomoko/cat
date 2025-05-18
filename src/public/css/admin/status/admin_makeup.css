@@ -8,6 +8,10 @@
     color: #4f4c4c;
 }
 
+.alert.alert-danger {
+    color: green;
+}
+
 .school {
     text-align: center;
     margin-bottom: 10px;

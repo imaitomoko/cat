@@ -9,19 +9,28 @@
 <div class="calendar">
     <h2> {{ $school->school_name }}   {{ $class->class_name }}</h2>
     <div class="month-navigation">
-        <!-- 前月ボタン -->
-        <a class="month_change" href="{{ route('schedule.list', ['school_id' => $school->id, 'class_id' => $class->id, 'year' => $previousMonth->year,
-        'month' => $previousMonth->month]) }}">
-            << 前月
-        </a>
-
+        <form method="GET" action="{{ route('schedule.list') }}" style="display:inline;">
+            <input type="hidden" name="school_id" value="{{ $school->id }}">
+            <input type="hidden" name="class_id" value="{{ $class->id }}">
+            <input type="hidden" name="year" value="{{ $previousMonth?->year }}">
+            <input type="hidden" name="month" value="{{ $previousMonth?->month }}">
+            <button class="month_change" type="submit" {{ $canGoPrev ? '' : 'disabled' }}>
+                << 前月
+            </button>
+        </form>
         <!-- 現在の月 -->
         <span class="month">{{ $startOfMonth->format('Y年m月') }}</span>
 
         <!-- 翌月ボタン -->
-        <a class="month_change" href="{{ route('schedule.list', ['school_id' => $school->id, 'class_id' => $class->id, 'year' => $nextMonth->year, 'month' => $nextMonth->month ])}}">
-            翌月 >>
-        </a>
+        <form method="GET" action="{{ route('schedule.list') }}" style="display:inline;">
+            <input type="hidden" name="school_id" value="{{ $school->id }}">
+            <input type="hidden" name="class_id" value="{{ $class->id }}">
+            <input type="hidden" name="year" value="{{ $nextMonth?->year }}">
+            <input type="hidden" name="month" value="{{ $nextMonth?->month }}">
+            <button class="month_change" type="submit" {{ $canGoNext ? '' : 'disabled' }}>
+                翌月 >>
+            </button>
+        </form>
     </div>
     <table>
         <thead>
@@ -58,34 +67,26 @@
                             <strong>{{ $day['date']->day }}</strong><br>
                             @foreach($day['lessons'] as $lesson)
                                 @php
-                                    $lessonValue1 = $lesson['lesson_value1'] ?? ''; 
-                                    $lessonValue2 = $lesson['lesson_value2'] ?? '';
-
+                                    $lessonValue = $lesson['lesson_value'] ?? ''; 
                                     $colorMap = [
                                         '青' => 'blue',
                                         '緑' => 'green',
                                         '紫' => 'purple',
                                     ];
 
-                                    $colorClass1 = '';
-                                    $colorClass2 = '';
+                                    $colorClass = '';
 
                                     foreach ($colorMap as $key => $color) {
-                                        if (str_starts_with($lessonValue1, $key)) {
-                                            $lessonValue1 = str_replace($key, '', $lessonValue1); 
-                                            $colorClass1 = $color;
-                                        }
-                                        if (str_starts_with($lessonValue2, $key)) {
-                                            $lessonValue2 = str_replace($key, '', $lessonValue2);
-                                            $colorClass2 = $color;
+                                        if (str_starts_with($lessonValue, $key)) {
+                                            $lessonValue = str_replace($key, '', $lessonValue); 
+                                            $colorClass = $color;
                                         }
                                     }
+                                    $dayOfWeekStr = $day['date']->isoFormat('ddd');
                                 @endphp
 
-                                @if ($lesson['day1'] === $day['date']->isoFormat('ddd') && !empty($lessonValue1))
-                                    <p class="lesson-value {{ $colorClass1 }}">{{ $lessonValue1 }}</p> <!-- day1 に対応する lesson_value1 -->
-                                @elseif ($lesson['day2'] === $day['date']->isoFormat('ddd') && !empty($lessonValue2))
-                                    <p class="lesson-value {{ $colorClass2 }}">{{ $lessonValue2 }}</p> <!-- day2 に対応する lesson_value2 -->
+                                @if (($lesson['day1'] === $dayOfWeekStr || $lesson['day2'] === $dayOfWeekStr) && !empty($lessonValue))
+                                    <p class="lesson-value {{ $colorClass }}">{{ $lessonValue }}</p>
                                 @endif
                             @endforeach
                         </td>
@@ -107,6 +108,9 @@
             </tr>
         </tbody>
     </table>
+    <div class="comment">
+        <p class="comment">{{ $comment->body ?? '' }}</p>
+    </div>
     <div class="back__button">
         <a class="back" href="{{ url()->previous() }}">back</a>
     </div>

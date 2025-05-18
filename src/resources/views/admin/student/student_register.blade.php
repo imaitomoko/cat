@@ -59,10 +59,10 @@
             </div>
         </div>
         <div class="add_lesson">
-            <a id="add-lesson" class="double-underline">レッスンを追加</a>
+            <a id="add-lesson" class="double-underline">他のレッスンを追加</a>
         </div>
 
-        <button type="submit" class="btn btn-primary">登録</button>
+        <button type="submit" class="btn btn-primary">レッスン登録</button>
     </form>
     <div class="back__button">
         <a class="back" href="{{ url()->previous() }}">back</a>

@@ -38,6 +38,7 @@ class AdminStatusController extends Controller
         $schoolId = $request->input('school_id');
         $classId = $request->input('class_id');
         $date =  Carbon::parse($request->input('date'));
+        $now = Carbon::now();
 
         // 学校・クラスの情報を取得
         $school = School::findOrFail($schoolId);
@@ -67,99 +68,250 @@ class AdminStatusController extends Controller
                         ->where('lesson_value', '!=', '休校');
             })
             ->pluck('id')
-            ->toArray(); 
-        
-        // `$date` に該当する `userLesson` を取得（通常のレッスン + 振替レッスン）
+            ->toArray();
+
         $userLessons = UserLesson::whereIn('lesson_id', $lessons)
-            ->whereHas('userLessonStatus', function ($query) use ($date) {
-                $query->whereDate('date', $date);
-            })
-            ->orWhereHas('userLessonStatus', function ($query) use ($date) {
-                $query->whereDate('reschedule_to', $date);
-            })
-            ->orWhereHas('rescheduledFrom', function ($query) use ($date) {
-                $query->whereHas('newUserLesson', function ($q) use ($date) {
-                    $q->whereHas('userLessonStatus', function ($subQuery) use ($date) {
-                        $subQuery->whereDate('date', $date);
-                    });
+            ->where(function ($query) use ($date) {
+                $query->whereHas('userLessonStatus', function ($query) use ($date) {
+                    $query->whereDate('date', $date);
+                })
+                ->orWhereHas('userLessonStatus', function ($query) use ($date) {
+                    $query->whereDate('reschedule_to', $date);
                 });
             })
-            ->with(['user', 'lesson', 'userLessonStatus', 'userLessonStatus.reschedule.newUserLesson', 'rescheduledFrom'])
+            ->with(['user', 'lesson', 'userLessonStatus', 'userLessonStatus.reschedule.lesson'])
             ->get()
-            ->map(function ($userLesson) use ($date, $weekdayJapanese) {
+            ->map(function ($userLesson) use ($date, $weekdayJapanese, $now) {
                 // start_time1 または start_time2 を選択
                 $lesson = $userLesson->lesson;
                 $startTime = null;
 
-                if ($lesson->day1 === $weekdayJapanese && !empty($lesson->start_time1)) {
+                if ($lesson && $lesson->day1 === $weekdayJapanese && !empty($lesson->start_time1)) {
                     $startTime = Carbon::parse($date->format('Y-m-d') . ' ' . $lesson->start_time1);
-                } elseif ($lesson->day2 === $weekdayJapanese && !empty($lesson->start_time2)) {
+                } elseif ($lesson && $lesson->day2 === $weekdayJapanese && !empty($lesson->start_time2)) {
                     $startTime = Carbon::parse($date->format('Y-m-d') . ' ' . $lesson->start_time2);
-                } elseif (!empty($lesson->start_time1)) {
+                } elseif ($lesson && !empty($lesson->start_time1)) {
                     // day1・day2と一致しない場合でも fallback で start_time1 を使用
                     $startTime = Carbon::parse($date->format('Y-m-d') . ' ' . $lesson->start_time1);
                 }
 
                 $matchedStatus = $userLesson->userLessonStatus
-                    ->first(function ($status) use ($date) {
-                        return Carbon::parse($status->date)->isSameDay($date);
-                    });
+                    ->first(fn ($status) => Carbon::parse($status->date)->isSameDay($date));
 
                 $status = $matchedStatus->status ?? null;
-                
-                $now = Carbon::now();
 
-                if ($date->isToday() && $startTime && $startTime->lt($now)) {
+
+                $now = Carbon::now();
+                if (
+                    ($date->isToday() && $startTime && $startTime->lt($now)) ||
+                    $date->lt($now)
+                ) {
                     if ($status === '未受講' || is_null($status)) {
                         $status = '受講済み';
                     }
-                } elseif ($date->lt($now)) {
-                   // 検索日が本日より過去なら、すでに終了しているとみなす
+                } elseif (
+                    ($date->isToday() && $startTime && $startTime->gt($now)) ||
+                    $date->gt($now)
+                ) {
                     if ($status === '未受講' || is_null($status)) {
-                        $status = '受講済み';
+                        $status = '未受講';
                     }
                 }
 
                 if ($status === '欠席する') {
-                    $status = '欠席';
+                    if (($date->isToday() && $startTime && $startTime->lt($now)) || $date->lt($now)) {
+                        $status = '欠席';
+                    }
+                }
+                return [
+                    'userLesson' => $userLesson,
+                    'status' => $status,
+                    'reschedule' => null,
+                    'rescheduleTo' => null,
+                    'isRescheduled' => null,
+                ];
+            });
+
+        $rescheduledStatuses = UserLessonStatus::whereDate('reschedule_to', $date)
+            ->with(['reschedule.lesson','reschedule.user',])
+            ->get()
+            ->map(function ($status) use ($date, $weekdayJapanese) {
+                $user = $status->reschedule->user ?? null;
+                $lesson = $status->reschedule->lesson ?? null;
+                $rescheduleStatus = $status->reschedule->reschedule_status ?? '未受講';
+                $originalDate = $status->date;
+
+
+                // 曜日と時間から開始時刻を推定
+                $startTime = null;
+                if ($lesson) {
+                    if ($lesson->day1 === $weekdayJapanese && !empty($lesson->start_time1)) {
+                        $startTime = Carbon::parse($date->format('Y-m-d') . ' ' . $lesson->start_time1);
+                    } elseif ($lesson->day2 === $weekdayJapanese && !empty($lesson->start_time2)) {
+                        $startTime = Carbon::parse($date->format('Y-m-d') . ' ' . $lesson->start_time2);
+                    } elseif (!empty($lesson->start_time1)) {
+                        $startTime = Carbon::parse($date->format('Y-m-d') . ' ' . $lesson->start_time1);
+                    }
+                }
+
+                   // 欠席する → 欠席
+                if ($rescheduleStatus === '欠席する') {
+                    $rescheduleStatus = '欠席';
+                }
+
+                     // 開始時刻が過去 or 当日かつ過ぎてる → 未受講 → 受講済み
+                $now = Carbon::now();
+                if (
+                    ($date->isToday() && $startTime && $startTime->lt($now)) ||
+                    $date->lt($now)
+                ) {
+                    if ($rescheduleStatus === '未受講') {
+                    $rescheduleStatus = '受講済み';
+                        }
                 }
 
                 return [
-                    'userLesson' => $userLesson,
-                    'user' => $userLesson->user,
-                    'lessonDate' => Carbon::parse($matchedStatus->date ?? $userLesson->lesson->start_date),
+                    'userLesson' => $status->userLesson,
+                    'user' => $user,
+                    'lessonDate' => Carbon::parse($originalDate),
                     'startTime' => $startTime,
-                    'status' => $status,
-                    'rescheduleTo' => optional($userLesson->userLessonStatus->first()->reschedule)->date,
-                    'isRescheduled' => $userLesson->reschedules && $userLesson->reschedules->isNotEmpty() 
-                        ? optional($userLesson->reschedules->first())->newUserLesson->userLessonStatus->date 
-                        : null,
-
+                    'status' => $rescheduleStatus,
+                    'rescheduleTo' => $date,
+                    'reschedule' => $status->reschedule,
+                    'isRescheduled' => true,
                 ];
             });
-        return view('admin.status.admin_class_list', compact('school', 'class', 'date', 'lessons', 'userLessons', 'lessonValues', 'weekdayJapanese'));
+        $userLessons = collect($userLessons);
+        $rescheduledStatuses = collect($rescheduledStatuses);
+        $mergedUserLessons = $userLessons->merge($rescheduledStatuses);
+
+        $regularLessons = collect($mergedUserLessons)->filter(fn($d) => isset($d['userLesson']) && empty($d['reschedule']));
+        $reschedules = collect($mergedUserLessons)->filter(fn($d) => !empty($d['reschedule']));
+
+        $mergedUserLessons = $regularLessons->merge($reschedules);
+
+
+        return view('admin.status.admin_class_list', compact('school', 'class', 'date', 'lessons', 'userLessons', 'lessonValues', 'weekdayJapanese','mergedUserLessons'));
     }
 
     public function detail($id)
     {
-
         $student = User::with([
+            'userLessons.lesson.lessonValues',
             'userLessons.lesson.school',
             'userLessons.lesson.schoolClass',
             'userLessons.userLessonStatus',
-            'userLessons.userLessonStatus.reschedule',
-            'userLessons.userLessonStatus.reschedule.newUserLesson',
-            'userLessons.userLessonStatus.reschedule.newUserLesson.lesson',
+            'userLessons.userLessonStatus.reschedule.lesson',
         ])->findOrFail($id);
 
-        return view('admin.status.admin_status', compact('student'));
+        // 本日を基準に、1ヶ月前〜2ヶ月後を計算
+        $now = \Carbon\Carbon::now();
+        $rangeStart = $now->copy()->subMonth();
+        $rangeEnd = $now->copy()->addMonths(2);
 
+        $student->userLessons = $student->userLessons->filter(function ($userLesson) use ($rangeStart, $rangeEnd) {
+            $lesson = $userLesson->lesson;
+            if (!$lesson) return false;
+
+            // lessonの開始日と終了日を設定
+            $lessonYear = $lesson->year;
+            $defaultStart = \Carbon\Carbon::create($lessonYear, 4, 1);
+            $defaultEnd = \Carbon\Carbon::create($lessonYear + 1, 3, 31);
+
+            $lessonStartDate = $userLesson->start_date 
+                ? \Carbon\Carbon::parse($userLesson->start_date) 
+                : $defaultStart;
+
+            $lessonEndDate = $userLesson->end_date 
+                ? \Carbon\Carbon::parse($userLesson->end_date) 
+                : $defaultEnd;
+
+            $realStartDate = $lessonStartDate->greaterThan($rangeStart) ? $lessonStartDate : $rangeStart;
+            $realEndDate = $lessonEndDate->lessThan($rangeEnd) ? $lessonEndDate : $rangeEnd;
+
+            // レッスン曜日の取得（day1, day2）
+            $lessonWeekdays = [];
+            if ($lesson->day1) $lessonWeekdays[] = self::getWeekdayNumber($lesson->day1);
+            if ($lesson->day2) $lessonWeekdays[] = self::getWeekdayNumber($lesson->day2);
+
+            // 振替可能なレッスンを判定
+            for ($date = $realStartDate->copy(); $date->lte($realEndDate); $date->addDay()) {
+                if (!in_array($date->dayOfWeek, $lessonWeekdays)) {
+                    continue;
+                }
+
+                // 休校日かどうかを判定
+                $isClosed = $lesson->lessonValues->contains(function ($lv) use ($date) {
+                    return $lv->date === $date->format('Y-m-d') && $lv->lesson_value === '休校';
+                });
+
+                 // 休校日でない場合、振替可能
+                if (!$isClosed) {
+                    return true;
+                }
+            }
+            return false;
+        });
+
+        $statusCollection = collect();
+        foreach ($student->userLessons as $userLesson) {
+            $lesson = $userLesson->lesson;
+            $startDate = \Carbon\Carbon::parse($userLesson->start_date ?? "{$lesson->year}-04-01");
+            $endDate = \Carbon\Carbon::parse($userLesson->end_date ?? ($lesson->year + 1) . '-03-31');
+
+            $filteredStatuses = $userLesson->userLessonStatus->filter(function ($status) use ($startDate, $endDate, $lesson, $rangeStart, $rangeEnd) {
+                $date = \Carbon\Carbon::parse($status->date);
+                $isClosed = $lesson->lessonValues->contains(fn($lv) => $lv->date === $date->format('Y-m-d') && $lv->lesson_value === '休校');
+                return $date->between($startDate, $endDate) && 
+                        $date->between($rangeStart, $rangeEnd) && 
+                        !$isClosed;
+            });
+
+            foreach ($filteredStatuses as $status) {
+                $status->userLesson = $userLesson; // 紐づけ情報も保持
+                $statusCollection->push($status);
+            }
+        }
+
+        // ページネーション
+        $currentPage = LengthAwarePaginator::resolveCurrentPage();
+        $perPage = 8;
+        $paginatedStatuses = new LengthAwarePaginator(
+            $statusCollection->forPage($currentPage, $perPage)->values(),
+            $statusCollection->count(),
+            $perPage,
+            $currentPage,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
+
+        return view('admin.status.admin_status', compact('student', 'paginatedStatuses'));
     }
+
+    private static function getWeekdayNumber($dayName)
+    {
+        $weekdays = [
+            '日' => 0,
+            '月' => 1,
+            '火' => 2,
+            '水' => 3,
+            '木' => 4,
+            '金' => 5,
+            '土' => 6,
+        ];
+
+        return $weekdays[$dayName] ?? null;
+    }
+
 
     public function toggleAbsence(Request $request, $userLessonId)
     {
+        $request->validate([
+            'date' => 'required|date',
+            'status' => 'required|in:欠席する,未受講',
+        ]);
+
         $date = $request->input('date'); // ← 日付を取得
-        $newStatus = $request->input('status');
+       $newStatus = $request->input('status'); // デフォルトを設定
 
         // 該当の日付のステータスを取得
         $userLessonStatus = UserLessonStatus::where('user_lesson_id', $userLessonId)
@@ -171,16 +323,20 @@ class AdminStatusController extends Controller
             $userLessonStatus = new UserLessonStatus();
             $userLessonStatus->user_lesson_id = $userLessonId;
             $userLessonStatus->date = $date;
-            $userLessonStatus->status = '欠席する';
-        } else {
-           // すでにある場合はステータスをトグル
-            if ($userLessonStatus->status === '欠席する') {
-                $userLessonStatus->status = '未受講';
-            } else {
-                $userLessonStatus->status = '欠席する';
+        }
+
+        $userLessonStatus->status = $newStatus;
+
+        // 「欠席中止」の場合は、関連する振替をキャンセル
+        if ($newStatus === '未受講') {
+            // 振替情報があればキャンセル
+            $reschedule = $userLessonStatus->reschedule;
+            if ($reschedule) {
+                // 振替情報をキャンセルする
+                $reschedule->originalLessonStatus->update(['reschedule_to' => null]);
+                $reschedule->delete();
             }
         }
-        $userLessonStatus->status = $newStatus;
 
         $userLessonStatus->save();
 
@@ -193,7 +349,9 @@ class AdminStatusController extends Controller
         $reschedule = Reschedule::findOrFail($rescheduleId);
 
         // reschedule_to カラムを null にする
-        $reschedule->originalLessonStatus->update(['reschedule_to' => null]);
+        if ($reschedule->originalLessonStatus) {
+            $reschedule->originalLessonStatus->update(['reschedule_to' => null]);
+        }
 
         // reschedules テーブルから削除
         $reschedule->delete();
@@ -204,15 +362,15 @@ class AdminStatusController extends Controller
     public function makeupShow($userLessonId, Request $request)
     {
         $statusId = $request->input('status_id');
+        $absenceDate = Carbon::parse($request->input('date'));
         $userLesson = UserLesson::with(['lesson.schoolClass', 'lesson.school'])->findOrFail($userLessonId);
         $lesson = $userLesson->lesson;
 
         $startOfYear = Carbon::createFromDate($lesson->year, 4, 1);
         $endOfYear = $startOfYear->copy()->addYear()->subDay();
     
-        $now = Carbon::now();
-        $startDate = $now->copy();
-        $endDate = $now->copy()->addMonth();
+        $startDate = $absenceDate->copy()->subWeeks(2);
+        $endDate = $absenceDate->copy()->addMonth();
 
         $selectedSchoolId = $request->input('school_id', $lesson->school_id); // デフォルトは現在の教
 
@@ -226,6 +384,13 @@ class AdminStatusController extends Controller
         // 他の教室一覧（自分の教室以外）
         $otherSchools = School::where('id', '!=', $lesson->school_id)->get();
 
+        $closedDates = LessonValue::where('lesson_value', '休校')
+            ->pluck('date')
+            ->map(function ($date) {
+                return Carbon::parse($date)->format('Y-m-d');
+            })
+            ->toArray();
+
         // 候補日の生成
         $rescheduleCandidates = collect();
         foreach ($otherLessons as $otherLesson) {
@@ -233,8 +398,13 @@ class AdminStatusController extends Controller
                 if (!$day) continue;
                 $date = Carbon::parse($startDate);
                 while ($date->lte($endDate)) {
-                    if ($date->isoFormat('ddd') === $day && $date->between($startOfYear, $endOfYear)) {
+                    if (
+                        $date->isoFormat('ddd') === $day && 
+                        $date->between($startOfYear, $endOfYear) &&
+                        !in_array($date->format('Y-m-d'), $closedDates) // 休校日除外
+                    ) {
                         $start_time = ($day === $otherLesson->day1) ? $otherLesson->start_time1 : $otherLesson->start_time2;
+
                         $rescheduleCandidates->push([
                             'date' => $date->copy(),
                             'weekday' => $day,
@@ -250,56 +420,52 @@ class AdminStatusController extends Controller
         // 日付で昇順にソート
         $sorted = $rescheduleCandidates->sortBy('date')->values();
 
-        $page = request()->get('page', 1);
         $perPage = 10;
+        $currentPage = request()->get('page', 1);
+        $currentItems = $sorted->slice(($currentPage - 1) * $perPage, $perPage)->values();
 
         $paginator = new LengthAwarePaginator(
-            $sorted->forPage($page, $perPage),
+            $currentItems,
             $sorted->count(),
             $perPage,
-            $page,
+            $currentPage,
             ['path' => request()->url(), 'query' => request()->query()]
         );
 
-        return view('admin.status.admin_makeup', [
-            'userLesson' => $userLesson,
-            'rescheduleCandidates' => $paginator,
-            'otherSchools' => $otherSchools,
-            'selectedSchoolId' => $selectedSchoolId, // 選択状態保持用
-            'statusId' => $statusId,
-        ]);
+        return view('admin.status.admin_makeup', compact(
+            'userLesson',
+            'paginator',
+            'rescheduleCandidates',
+            'otherSchools',
+            'selectedSchoolId', // 選択状態保持用
+            'statusId',
+        ));
     }
 
-    public function makeupUpdate(Request $request, $userLessonId)
+    public function makeupUpdate(Request $request, $userLessonStatusId)
     {
         $request->validate([
             'date' => 'required|date',
             'lesson_id' => 'required|integer|exists:lessons,id',
-            'status_id' => 'required|integer|exists:user_lesson_statuses,id',
         ]);
 
         // status_id から取得
-        $status = UserLessonStatus::findOrFail($request->status_id);
+        $status = UserLessonStatus::findOrFail($userLessonStatusId);
+
+        $rescheduledLesson = Lesson::findOrFail($request->lesson_id);
 
         // reschedule_to に振替日だけ保存
         $status->reschedule_to = $request->date;
         $status->save();
 
-        $newUserLesson = UserLesson::firstOrCreate([
+        Reschedule::create([
+            'user_lesson_status_id' => $status->id,
             'user_id' => $status->userLesson->user_id,
             'lesson_id' => $request->lesson_id,
-        ], [
-            'start_date' => now(),
-            'end_date' => now()->addMonth(),
-        ]);
-
-        Reschedule::firstOrCreate([
-            'user_lesson_status_id' => $status->id,
-            'new_user_lesson_id' => $newUserLesson->id,
         ]);
 
         return redirect()->route('admin.student.detail', ['id' => $status->userLesson->user_id])
-    ->with('success', '振替を登録しました');
+            ->with('success', '振替を登録しました');
     }
 
 

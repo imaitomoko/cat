@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Models\LessonValue;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
+use App\Models\Comment;
 
 class AdminScheduleController extends Controller
 {
@@ -35,7 +36,11 @@ class AdminScheduleController extends Controller
                 Carbon::create($selectedYear, $selectedMonth, 1)->startOfMonth()->toDateString(),
                 Carbon::create($selectedYear, $selectedMonth, 1)->endOfMonth()->toDateString()
             ]);
-        }])->get();
+        }])
+        ->where('school_id', $schoolId)
+        ->where('class_id', $classId)
+        ->where('year', $selectedYear)
+        ->get();
 
         // 年度の開始・終了（例：2024年度 → 2024年4月～2025年3月）
         $fiscalYearStart = Carbon::create($selectedYear, 4, 1);
@@ -67,14 +72,14 @@ class AdminScheduleController extends Controller
         $previousYear = $previousMonth ? ($previousMonth->month < 4 ? $previousMonth->year - 1 : $previousMonth->year) : null;
         $nextYear = $nextMonth ? ($nextMonth->month < 4 ? $nextMonth->year - 1 : $nextMonth->year) : null;
 
-        // レッスンを取得 (school_id と class_id に基づく)
-        $lessons = Lesson::where('school_id', $schoolId)
-            ->where('class_id', $classId)
-            ->where('year', $selectedYear) 
-            ->get();
-
         // カレンダー用のデータ作成
         $daysInMonth = $this->generateCalendar($currentYear, $currentMonth, $lessons);
+
+        $comment = Comment::where('school_id', $schoolId)
+            ->where('class_id', $classId)
+            ->where('year', $selectedYear)
+            ->where('month', $selectedMonth)
+            ->first();
 
         return view('admin.schedule.admin_schedule_list', compact(
             'school',
@@ -89,7 +94,9 @@ class AdminScheduleController extends Controller
             'previousYear', // ← 前月の年を渡す
             'nextYear',
             'startOfMonth',
-            'lessons'
+            'selectedMonth',
+            'lessons',
+            'comment'
         ));
     }
 
@@ -115,11 +122,9 @@ class AdminScheduleController extends Controller
 
     public function update(Request $request, $lessonId)
     {
-
         $validatedData = $request->validate([
-        'lesson_values' => 'required|array', // lesson_valuesが配列であることを確認
+            'lesson_values' => 'required|array', // lesson_valuesが配列であることを確認
         ]);
-
 
         foreach ($request->input('lesson_values') as $date => $lessonData) {
             foreach ($lessonData as $lessonId => $values) {
@@ -130,9 +135,28 @@ class AdminScheduleController extends Controller
         
                 $lessonValue->lesson_value = $values['lesson_value'] ?? null;
 
-                // 保存
                 $lessonValue->save();
             }
+        }
+
+        $request->validate([
+            'comment' => 'nullable|string|max:300',
+        ]);
+
+        $lesson = Lesson::find($lessonId);
+        $month = $request->input('month');
+        $year = $request->input('year'); 
+
+        if ($lesson && $request->filled('comment')&& $month) {
+            Comment::updateOrCreate(
+                [
+                    'body' => $request->input('comment'),
+                    'school_id' => $lesson->school_id,
+                    'class_id' => $lesson->class_id,
+                    'year' => $lesson->year,
+                    'month' => $month,
+                ]
+            );
         }
 
         return redirect()->route('admin.schedule.index')->with('success', 'レッスンが更新されました');

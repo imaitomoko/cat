@@ -39,6 +39,15 @@ class AdminAuthController extends Controller
         ]);
     }
 
+    public function logout(Request $request)
+    {
+        Auth::guard('admin')->logout(); // guardを使っている場合
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('admin.login');
+    }
+
     public function index()
     {
         return view('admin.admin');

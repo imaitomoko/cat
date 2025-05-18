@@ -39,23 +39,22 @@ Route::middleware('auth')->group(function () {
     Route::get('/status', [StatusController::class, 'index']);
     Route::get('status/list/{user_lesson_id}', [StatusController::class, 'show'])->name('status.list');
     Route::post('/status/absence/confirm/{userLessonId}', [StatusController::class, 'confirmAbsence'])->name('status.absence.confirm');
-
     Route::get('/status/makeup/{userLessonId}', [StatusController::class, 'makeupShow'])->name('status.makeup');
     Route::post('/makeup/update/{userLessonId}', [StatusController::class, 'makeupUpdate'])->name('makeup.update');
     Route::delete('/reschedule/cancel/{rescheduleId}', [StatusController::class, 'cancelReschedule'])->name('reschedule.cancel');
-    
-        Route::post('/status/absence/store', [StatusController::class, 'storeAbsence'])->name('status.absence.store');
-
 });
 
 Route::prefix('teacher')->group(function () {
     Route::get('/login', [TeacherAuthController::class, 'showLoginForm'])->name('teacher.login');
     Route::post('/login', [TeacherAuthController::class, 'login'])->name('teacher.login.submit');
+    Route::post('/logout', [TeacherAuthController::class, 'logout'])->name('teacher.logout');
 });
 
 Route::prefix('admin')->group(function () {
     Route::get('/login', [AdminAuthController::class, 'showLoginForm'])->name('admin.login');
     Route::post('/login', [AdminAuthController::class, 'login'])->name('admin.login.submit');
+    Route::post('/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
+
 });
 
 Route::middleware(['auth:teacher'])->group(function () {
@@ -65,7 +64,8 @@ Route::middleware(['auth:teacher'])->group(function () {
     Route::get('/month/list', [TeacherScheduleController::class, 'result'])->name('teacher.month.list');
     Route::get('/classSearch', [TeacherClassController::class, 'search'])->name('teacher.classSearch');
     Route::get('/classSearch/{date}', [TeacherClassController::class, 'search'])->name('teacher.classSearch.date');
-
+    Route::get('/class/{lesson}', [TeacherClassController::class, 'classList'])->name('teacher.class.list');
+    Route::post('/status/toggle', [TeacherClassController::class, 'toggleStatus'])->name('teacher.status.toggle');
 });
 
 Route::middleware(['auth:admin'])->group(function () {
@@ -125,7 +125,7 @@ Route::middleware(['auth:admin'])->group(function () {
         Route::get('/student/{id}', [AdminStatusController::class, 'detail'])->name('student.detail');
 
         Route::get('/status/makeup/{userLessonId}', [AdminStatusController::class, 'makeupShow'])->name('status.makeup');
-        Route::post('/makeup/update/{userLessonId}', [AdminStatusController::class, 'makeupUpdate'])->name('makeup.update');
+        Route::post('/makeup/update/{userLessonStatusId}', [AdminStatusController::class, 'makeupUpdate'])->name('makeup.update');
         Route::delete('/reschedule/cancel/{rescheduleId}', [AdminStatusController::class, 'cancelReschedule'])->name('reschedule.cancel');
     });
 

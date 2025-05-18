@@ -21,6 +21,7 @@
             <form action="{{ route('admin.lesson.updateNextYear') }}" method="POST">
                 @csrf
                 <p>{{ session('confirm') }}</p>
+                <input type="hidden" name="lesson_id" value="{{ session('lesson_id') }}">
                 <input type="hidden" name="confirm" value="1">
                 <button type="submit" class="btn btn-warning">はい</button>
                 <a href="{{ url()->previous() }}" class="btn btn-secondary">キャンセル</a>

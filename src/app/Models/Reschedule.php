@@ -13,6 +13,7 @@ class Reschedule extends Model
         'user_lesson_status_id',
         'lesson_id',
         'user_id',
+        'reschedule_status', 
     ];
 
     public function originalLessonStatus()
@@ -27,7 +28,7 @@ class Reschedule extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
 }
