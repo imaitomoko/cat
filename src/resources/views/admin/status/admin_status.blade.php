@@ -72,8 +72,24 @@
                             {{-- 日付が過去 & 開始時間も過去 --}}
                             @if ($status->status === '未受講')
                                 <span>受講済み</span>
+                                @if (!is_null($status['userLesson']) && !$rescheduleDate)
+                                    <form action="{{ route('admin.status.absent', ['userLessonId' => $status['userLesson']->id]) }}" method="POST" style="display: inline-block; margin-left: 5px;">
+                                        @csrf
+                                        <input type="hidden" name="date" value="{{ $status->date }}">
+                                        <input type="hidden" name="status" value="欠席する">
+                                        <button type="submit" class="btn btn-warning-dark btn-sm">欠席に変更</button>
+                                    </form>
+                                @endif
                             @elseif ($status->status === '欠席する')
                                 <span>欠席</span>
+                                @if (!is_null($status['userLesson']) && !$rescheduleDate)
+                                    <form action="{{ route('admin.status.absent', ['userLessonId' => $status['userLesson']->id]) }}" method="POST" style="display:inline-block; margin-left:5px;">
+                                        @csrf
+                                        <input type="hidden" name="date" value="{{ $status->date }}">
+                                        <input type="hidden" name="status" value="未受講">
+                                        <button type="submit" class="btn btn-orange btn-sm">欠席取消</button>
+                                    </form>
+                                @endif
                             @else
                                 <span>{{ $status->status }}</span>
                             @endif

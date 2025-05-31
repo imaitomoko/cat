@@ -148,13 +148,15 @@ class TeacherClassController extends Controller
                 // 開始時間の算出
                 $startTime = $this->getStartTime($lesson, $searchDate, $weekdayJapanese);
 
-                $status = optional(
-                    $userLesson->userLessonStatus->first(
-                        fn ($s) => Carbon::parse($s->date)->isSameDay($searchDate)
-                    )
-                )->status;
-               // ステータスの補正処理
-                $status = $this->normalizeStatus($status, $searchDate, $startTime);
+                $isMakeup = $userLesson->is_makeup ?? false;
+
+
+                $status = $originalStatus;
+
+                if (!$isMakeup) {
+                    // レギュラー生徒のみ normalizeStatus() を適用
+                    $status = $this->normalizeStatus($status, $searchDate, $startTime);
+                }
 
                 return [
                     'userLesson' => $userLesson,
@@ -165,9 +167,11 @@ class TeacherClassController extends Controller
                     'reschedule' => null,
                     'rescheduleTo' => null,
                     'isRescheduled' => false,
-                    'is_makeup' => false,
+                    'is_makeup' => $isMakeup,
+                    'is_manual_absence' => $isManualAbsence,
                     'is_truency_active' => $originalStatus === '欠席する' && $isManualAbsence,
-                    'show_button' => $originalStatus === '未受講',
+                    'show_button' => $status === '未受講' && $startTime && $startTime->isFuture(),
+
                 ];
             });
 
@@ -186,23 +190,27 @@ class TeacherClassController extends Controller
 
                 $startTime = $this->getStartTime($lesson, $searchDate, $weekdayJapanese);
 
-                $rescheduleStatus = $this->normalizeStatus(
-                    $status->reschedule->reschedule_status ?? '未受講',
-                    $searchDate,
-                    $startTime
-                );
+                $rescheduleStatus = $reschedule->reschedule_status ?? '未受講';
+
+                if ($rescheduleStatus === '未受講' && $startTime && $startTime->isPast()) {
+                    $displayStatus = 'Attended';
+                } elseif ($rescheduleStatus === '欠席する') {
+                    $displayStatus = 'Absent';
+                } else {
+                    $displayStatus = $rescheduleStatus;
+                }
 
                 return [
                     'userLesson' => null,
                     'user_lesson_status_id' => $status->id,
                     'name' => optional($user)->user_name ?? '不明',
-                    'status' => $rescheduleStatus,
+                    'status' => $displayStatus,
                     'rescheduleTo' => $searchDate,
                     'reschedule' => $reschedule,
                     'isRescheduled' => true,
                     'is_makeup' => true,
-                    'is_truency_active' => false, 
-                    'show_button' => $status === '未受講' && $searchDate->isFuture(),
+                    'is_truency_active' => $rescheduleStatus === '欠席する',
+                    'show_button' => $rescheduleStatus === '未受講' && $startTime && $startTime->isFuture(),
                 ];
             })
             ->filter();
@@ -231,7 +239,7 @@ class TeacherClassController extends Controller
             }
 
             // ステータスをトグル
-            $reschedule->reschedule_status = ($reschedule->reschedule_status === '未受講') ? '欠席' : '未受講';
+            $reschedule->reschedule_status = ($reschedule->reschedule_status === '未受講') ? '欠席する' : '未受講';
             $reschedule->save();
         } else {
             // 通常の生徒：user_lesson_statuses テーブルを更新

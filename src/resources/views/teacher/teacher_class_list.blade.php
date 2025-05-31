@@ -28,13 +28,22 @@
                             @csrf
                             <input type="hidden" name="user_lesson_status_id" value="{{ $student['user_lesson_status_id'] }}">
                             <input type="hidden" name="is_makeup" value="{{ $student['is_makeup'] ? 1 : 0 }}">
-
-                            @if ($student['is_truency_active'])
-                                <button type="submit">Cancel Truency</button>
-                            @elseif ($student['show_button'])
-                                <button type="submit">Truency</button>
+                            @if ($student['is_makeup'])
+                                @if ($student['status'] === '欠席する')
+                                    <button type="submit">Cancel Truency</button>
+                                @elseif ($student['status'] === '未受講')
+                                    <button type="submit">Truency</button>
+                                @else
+                                    {{ $student['status'] }}
+                                @endif
                             @else
-                                {{ $student['status'] }}
+                                @if ($student['is_truency_active'])
+                                    <button type="submit">Cancel Truency</button>
+                                @elseif ($student['show_button'])
+                                    <button type="submit">Truency</button>
+                                @else
+                                    {{ $student['status'] }}
+                                @endif
                             @endif
                         </form>
                     </td>

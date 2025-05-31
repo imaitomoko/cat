@@ -298,76 +298,82 @@ class LessonController extends Controller
             $latestYear = Lesson::orderBy('year', 'desc')->first()->year;
             $nextYear = $latestYear + 1;
 
-            session(['lesson_id' => $latestYear . 'IPa']);  // lesson_id をセッションに保存
+            session(['target_year' => $latestYear]);  // lesson_id をセッションに保存
             session(['confirm' => "{$nextYear}年度のレッスンデータを作成しますか？"]); 
 
             // セッションに確認メッセージ
             return back()->with('confirm', "{$nextYear}年度のレッスンデータを作成しますか？")
                          ->withInput(); // lesson_id などをフォームに引き継ぐため
         }
+    }
 
+    public function updateNextYearStore(Request $request)
+    {
         // --- ここから処理実行 ---
-        $oldLessonId = $request->input('lesson_id'); 
-        $currentYear = (int)substr($oldLessonId, 0, 4);
-        $nextYear = $currentYear + 1;
-        $deleteYear = $currentYear - 1;
+        $targetYear = (int) $request->input('target_year'); 
+        $nextYear = $targetYear + 1;
+        $deleteYear = $targetYear - 1;
 
-        $suffix = substr($oldLessonId, 4); 
-        $newLessonId = $nextYear . $suffix;
-        $deleteLessonId = $deleteYear . $suffix;
+        $oldLessons = Lesson::where('year', $targetYear)->get();
 
-        $oldLesson = Lesson::where('lesson_id', $oldLessonId)->firstOrFail();
+        foreach ($oldLessons as $oldLesson) {
+            $oldLessonId = $oldLesson->lesson_id; // 例: 2025MFiMon
+            $suffix = substr($oldLessonId, 4);    // 例: MFiMon
 
-        // 2年前のレッスン削除
-        $deleteLesson = Lesson::where('lesson_id', $deleteLessonId)->first();
-        if ($deleteLesson) {
-            LessonValue::where('lesson_id', $deleteLesson->id)->delete();
-            $deleteLesson->delete();
-        }
+            $newLessonId = $nextYear . $suffix;   // 2026MFiMon
+            $deleteLessonId = $deleteYear . $suffix; // 2024MFiMon
 
-        // 新年度レッスンの重複チェックと削除
-        $existing = Lesson::where('lesson_id', $newLessonId)->first();
-        if ($existing) {
-            LessonValue::where('lesson_id', $existing->id)->delete();
-            $existing->delete();
-        }
-
-        // 新しいレッスンを作成
-        $lesson = Lesson::create([
-            'lesson_id'     => $newLessonId,
-            'year'          => $nextYear,
-            'school_id'     => $oldLesson->school_id,
-            'class_id'      => $oldLesson->class_id,
-            'day1'          => $oldLesson->day1,
-            'start_time1'   => $oldLesson->start_time1,
-            'duration1'     => $oldLesson->duration1,
-            'day2'          => $oldLesson->day2,
-            'start_time2'   => $oldLesson->start_time2,
-            'duration2'     => $oldLesson->duration2,
-            'max_number'    => $oldLesson->max_number,
-        ]);
-
-        // LessonValue の生成
-        $daysMap = ['日' => 0, '月' => 1, '火' => 2, '水' => 3, '木' => 4, '金' => 5, '土' => 6];
-        $day1Num = $daysMap[$lesson->day1] ?? null;
-        $day2Num = $daysMap[$lesson->day2] ?? null;
-
-        $start = Carbon::createFromDate($nextYear, 4, 1);
-        $end = $start->copy()->addYear()->subDay();
-
-        while ($start <= $end) {
-            if ($start->dayOfWeek === $day1Num || $start->dayOfWeek === $day2Num) {
-                LessonValue::create([
-                    'lesson_id' => $lesson->id,
-                    'date' => $start->format('Y-m-d'),
-                    'lesson_value' => '青①',
-                ]);
+            // 2年前のレッスン削除
+            $deleteLesson = Lesson::where('lesson_id', $deleteLessonId)->first();
+            if ($deleteLesson) {
+                LessonValue::where('lesson_id', $deleteLesson->id)->delete();
+                $deleteLesson->delete();
             }
-            $start->addDay();
+
+           // 新年度レッスンの重複チェックと削除
+            $existing = Lesson::where('lesson_id', $newLessonId)->first();
+            if ($existing) {
+                LessonValue::where('lesson_id', $existing->id)->delete();
+                $existing->delete();
+            }
+
+            // 新しいレッスンを作成
+            $newLesson = Lesson::create([
+                'lesson_id'     => $newLessonId,
+                'year'          => $nextYear,
+                'school_id'     => $oldLesson->school_id,
+                'class_id'      => $oldLesson->class_id,
+                'day1'          => $oldLesson->day1,
+                'start_time1'   => $oldLesson->start_time1,
+                'duration1'     => $oldLesson->duration1,
+                'day2'          => $oldLesson->day2,
+                'start_time2'   => $oldLesson->start_time2,
+                'duration2'     => $oldLesson->duration2,
+                'max_number'    => $oldLesson->max_number,
+            ]);
+
+            // LessonValue の作成
+            $daysMap = ['日' => 0, '月' => 1, '火' => 2, '水' => 3, '木' => 4, '金' => 5, '土' => 6];
+            $day1Num = $daysMap[$newLesson->day1] ?? null;
+            $day2Num = $daysMap[$newLesson->day2] ?? null;
+
+            $start = Carbon::createFromDate($nextYear, 4, 1);
+            $end = $start->copy()->addYear()->subDay();
+
+            while ($start <= $end) {
+                if ($start->dayOfWeek === $day1Num || $start->dayOfWeek === $day2Num) {
+                    LessonValue::create([
+                        'lesson_id' => $newLesson->id,
+                        'date' => $start->format('Y-m-d'),
+                        'lesson_value' => '青①',
+                    ]);
+                }
+                $start->addDay();
+            }
         }
 
         return redirect()->route('admin.lesson.index')
             ->with('success', "{$nextYear}年度のレッスンを作成し、{$deleteYear}年度のレッスンを削除しました。");
     }
-    
+
 }

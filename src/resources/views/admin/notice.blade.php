@@ -48,6 +48,10 @@
         </tbody>
     </table>
 
+    <div class="pagination-container">
+        {{ $notices->links() }}
+    </div>
+
     {{-- 新規登録フォーム --}}
     <form action="{{ route('notices.store') }}" method="POST" class="mt-4">
         @csrf

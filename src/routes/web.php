@@ -86,7 +86,8 @@ Route::middleware(['auth:admin'])->group(function () {
         Route::get('/pdf', [LessonController::class, 'generatePDF'])->name('pdf');
         Route::get('/create', [LessonController::class, 'create'])->name('create');
         Route::post('/store', [LessonController::class, 'store'])->name('store');
-        Route::post('/update-next-year', [LessonController::class, 'updateNextYear'])->name('updateNextYear');
+        Route::post('/update-next-year/confirm', [LessonController::class, 'updateNextYear'])->name('updateNextYear');
+        Route::post('/update-next-year/store', [LessonController::class, 'updateNextYearStore'])->name('updateNextYearStore');
     });
 
     Route::prefix('admin/master')->name('admin.master.')->group(function () {

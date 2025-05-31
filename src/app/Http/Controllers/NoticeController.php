@@ -9,7 +9,14 @@ class NoticeController extends Controller
 {
     public function index()
     {
-        $notices = NewsList::all();
+        $maxNotices = 20;
+        $noticesToKeep = NewsList::orderBy('created_at', 'desc')->take($maxNotices)->pluck('id');
+
+    // それ以外を削除
+        NewsList::whereNotIn('id', $noticesToKeep)->delete();
+
+    // ページネーションで表示（1ページ5件）
+        $notices = NewsList::orderBy('created_at', 'desc')->paginate(5);
         return view('admin.notice', compact('notices'));
     }
 
