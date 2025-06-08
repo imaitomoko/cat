@@ -109,10 +109,10 @@
         </tbody>
     </table>
     <div class="comment">
-        <p class="comment">{{ $comment->body ?? '' }}</p>
+        <p class="comment_inner">{{ $comment->body ?? '' }}</p>
     </div>
     <div class="back__button">
-        <a class="back" href="{{ url()->previous() }}">back</a>
+        <a class="back" href="{{ route('schedule') }}">back</a>
     </div>
 </div>
 @endsection

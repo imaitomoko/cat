@@ -1,7 +1,15 @@
 .content {
+    width: 100%;
     margin: 0 auto;
     padding: 20px 15px;
-    max-width: 760px;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+    .content {
+        max-width: 720px;
+    }
 }
 
 .heading {

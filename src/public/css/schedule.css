@@ -1,6 +1,17 @@
+/* ベース（スマホ向け） */
 .content {
+    width: 100%;
+    max-width: 100%;
+    padding: 0 16px;
+    box-sizing: border-box;
     margin: 20px auto;
-    max-width: 760px;
+}
+
+/* タブレット以上 */
+@media (min-width: 768px) {
+    .content {
+        max-width: 720px;
+    }
 }
 
 .ttl {

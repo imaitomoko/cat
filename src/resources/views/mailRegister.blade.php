@@ -27,7 +27,7 @@
         <p class="success">{{ session('success') }}</p>
         @endif
         <div class="back__button">
-            <a href="/">back</a>
+            <a href="{{ route('index') }}">back</a>
         </div>
     </div>
 </div>

@@ -1,8 +1,18 @@
+
 .content {
+    width: 100%;
+    max-width: 100%;
+    padding: 0 16px;
+    box-sizing: border-box;
     margin: 20px auto;
-    max-width: 760px;
 }
 
+/* タブレット以上 */
+@media (min-width: 768px) {
+    .content {
+        max-width: 720px;
+    }
+}
 .ttl {
     text-align: center;
     color: #4f4c4c;
@@ -45,10 +55,8 @@
 
 .back__button {
     text-align: center;
-    align-items: center;
-    position: fixed;
-    bottom: 60px;
     width: 100px;
+    margin: 40px auto;
     padding: 5px;
     height: 35px;
     border: none;
@@ -56,8 +64,6 @@
     background: #808080;
     cursor: pointer;
     font-size: 15px;
-    left: 50%;
-    transform: translateX(-50%);
 }
 
 .back {

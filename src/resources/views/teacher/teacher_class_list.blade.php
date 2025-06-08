@@ -60,7 +60,7 @@
     </table>
 
     <div class="back__button">
-        <a class="back" href="{{ url()->previous() }}">back</a>
+        <a class="back" href="{{ route('teacher.search') }}">back</a>
     </div>
 </div>
 @endsection

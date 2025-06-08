@@ -30,10 +30,10 @@ use App\Http\Controllers\AdminStatusController;
 |
 */
 Route::middleware('auth')->group(function () {
-    Route::get('/', [AuthController::class, 'index']);
+    Route::get('/', [AuthController::class, 'index'])->name('index');
     Route::get('/mail', [MailRegisterController::class, 'index']);
     Route::post('/update-email', [MailRegisterController::class, 'updateEmail']);
-    Route::get('/schedule', [ScheduleController::class, 'index']);
+    Route::get('/schedule', [ScheduleController::class, 'index'])->name('schedule');
     Route::get('/schedule/list', [ScheduleController::class, 'show'])->name('schedule.list');
     Route::get('/schedule/search', [ScheduleController::class, 'search'])->name('schedule.search');
     Route::get('/status', [StatusController::class, 'index']);

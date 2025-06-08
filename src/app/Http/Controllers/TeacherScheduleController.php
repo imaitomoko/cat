@@ -8,6 +8,7 @@ use App\Models\Lesson;
 use App\Models\School;
 use App\Models\SchoolClass;
 use App\Models\LessonValue;
+use App\Models\Comment;
 use Carbon\Carbon;
 
 class TeacherScheduleController extends Controller
@@ -90,6 +91,12 @@ class TeacherScheduleController extends Controller
             ];
         }
 
+        $comment = Comment::where('school_id', $schoolId)
+            ->where('class_id', $classId)
+            ->where('year', $currentYear)
+            ->where('month', $currentMonth)
+            ->first();
+
         return view('teacher.teacher_schedule_list', compact(
             'school',
             'class',
@@ -99,7 +106,8 @@ class TeacherScheduleController extends Controller
             'startOfMonth', 
             'endOfMonth',
             'canGoPrev',
-            'canGoNext'
+            'canGoNext',
+            'comment'
         ));
 }
 

@@ -7,7 +7,7 @@
 @section('content')
 <div class="content">
     <div class="heading">
-        <h2>Schedule Search</h2>
+        <h2>Class Search</h2>
     </div>
     <div class="search">
         <form class="search__form" action="{{ route('teacher.classSearch') }}" method="GET">
@@ -61,7 +61,7 @@
     </div>
     
     <div class="back__button">
-        <a class="back" href="{{ url()->previous() }}">back</a>
+        <a class="back" href="{{ route('teacher.teacher') }}">back</a>
     </div>
 </div>
 @endsection

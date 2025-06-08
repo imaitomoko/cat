@@ -7,10 +7,10 @@
 @section('content')
 <div class="content">
     <div class="heading">
-        <h2>{{ $userLesson->lesson->school->school_name ?? '学校情報なし' }} - 
-            {{ $userLesson->lesson->schoolClass->class_name ?? 'クラス情報なし' }} - 
-            {{ $userLesson->user->user_name }} さん
+        <h2>{{ $userLesson->lesson->school->school_name ?? '学校情報なし' }} 
+            {{ $userLesson->lesson->schoolClass->class_name ?? 'クラス情報なし' }}  
         </h2>
+        <h2>{{ $userLesson->user->user_name }} さん</h2>
     </div>
 
     <div class="school">
@@ -29,7 +29,7 @@
         <table>
             <thead>
                 <tr>
-                    <th>日付（曜日）</th>
+                    <th>日付</th>
                     <th>時間</th>
                     <th>選択</th>
                 </tr>
@@ -62,7 +62,7 @@
     </div>
 
     <div class="back__button">
-        <a class="back" href="{{ url()->previous() }}">back</a>
+        <a class="back" href="{{ route('status.list', ['user_lesson_id' => $userLesson->id]) }}">back</a>
     </div>
 </div>
 

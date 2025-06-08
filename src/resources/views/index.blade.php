@@ -24,14 +24,14 @@
         @endforeach
     </div>
     <div class="menu">
-        <div class="menu__button">
-            <a href="/schedule">スケジュール確認</a>
+        <div>
+            <a href="/schedule" class="menu__button">スケジュール確認</a>
         </div>
-        <div class="menu__button">
-            <a href="/status">欠席・振替予約</a>
+        <div>
+            <a href="/status" class="menu__button">欠席・振替予約</a>
         </div>
-        <div class="menu__button">
-            <a href="/mail">メールアドレス登録・変更</a>
+        <div>
+            <a href="/mail" class="menu__button">メールアドレス登録・変更</a>
         </div>
     </div>
 </div>

@@ -1,9 +1,17 @@
 .top__content {
+    width: 100%;
     margin: 0 auto;
     padding: 20px 15px;
-    max-width: 760px;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
+@media (min-width: 768px) {
+    .top__content {
+        max-width: 720px;
+        /* タブレット〜PC時のみ制限をつける */
+    }
+}
 .user__info {
     margin-bottom: 20px;
     text-align: center;
@@ -12,7 +20,7 @@
 }
 
 .user__ttl {
-    margin: 0 20px;
+    margin: 0 10px;
     color: #4f4c4c;
 }
 
@@ -41,18 +49,15 @@
 }
 
 .menu__button {
+    display: inline-block;
     text-align: center;
     width: 90%;
+    color: #fff;
     padding: 10px;
     background-color: blue;
     border-radius: 5px;
-    margin: 30px auto;
+    text-decoration: none;
+    margin: 15px auto;
+    cursor: pointer;
 }
 
-a {
-    font-size: 17px;
-    color: #fff;
-    text-align: center;
-    align-items: center;
-    text-decoration: none;
-}

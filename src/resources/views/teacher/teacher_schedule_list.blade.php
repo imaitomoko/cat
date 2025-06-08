@@ -110,6 +110,9 @@
             </tr>
         </tbody>
     </table>
+    <div class="comment">
+        <p class="comment_inner">{{ $comment->body ?? '' }}</p>
+    </div>
     <div class="back__button">
         <a class="back" href="{{ url()->previous() }}">back</a>
     </div>

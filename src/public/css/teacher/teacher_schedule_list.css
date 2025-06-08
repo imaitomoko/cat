@@ -119,6 +119,19 @@
     font-size: 22px;
 }
 
+.comment {
+    border: #808080 1px solid;
+    border-radius: 3px;
+    margin-top: 10px;
+    min-height: 50px;
+}
+
+.comment_inner {
+    color: red;
+    font-size: 14px;
+    font-weight: bold;
+}
+
 .back__button {
     text-align: center;
     align-items: center;
