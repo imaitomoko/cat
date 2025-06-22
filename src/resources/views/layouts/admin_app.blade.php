@@ -8,6 +8,8 @@
     <title>CAT</title>
     <link rel="stylesheet" href="{{ asset('css/sanitize.css') }}">
     <link rel="stylesheet" href="{{ asset('css/admin/admin_common.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP&display=swap" rel="stylesheet">
+
     @yield('css')
 </head>
 
