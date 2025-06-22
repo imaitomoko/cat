@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('comments', function (Blueprint $table) {
-            $table->unsignedTinyInteger('month')->nullable()->after('year');
+            $table->unsignedTinyInteger('month')->nullable();
             //
         });
     }
