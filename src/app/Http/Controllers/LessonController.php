@@ -44,13 +44,10 @@ class LessonController extends Controller
             $lessons->where('school_id', $request->school_id);
         }
 
-        $lessons = $lessons->paginate(8);  // 8件ごとに表示
-
-        session([
-            'search_year' => $request->year,
-            'search_school_id' => $request->school_id
-        ]);
-
+        $lessons = $lessons->paginate(8)->appends([
+            'year' => $request->year,
+            'school_id' => $request->school_id,
+        ]);  
 
         foreach ($lessons as $lesson) {
         if ($lesson->start_time1) {
