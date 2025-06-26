@@ -28,14 +28,26 @@ class AdminScheduleController extends Controller
     {
         $schoolId = $request->input('school_id');
         $classId = $request->input('class_id');
-        $selectedMonth = $request->input('month', Carbon::now()->month);
-        $selectedYear = $request->input('year', Carbon::now()->year);
+        $selectedMonth = $request->input('month');
+        $selectedYear = $request->input('year');
+
+        if(!is_numeric($selectedMonth) || $selectedMonth < 1 || $selectedMonth > 12) {
+            $selectedMonth = Carbon::now()->month;
+        } else {
+            $selectedMonth = (int) $selectedMonth;
+        }
+
+        if(!is_numeric($selectedYear) || $selectedYear < 2000 || $selectedYear > 2100) {
+            $selectedYear = Carbon::now()->year;
+        } else {
+            $selectedYear = (int) $selectedYear;
+        }
 
         $lessons = Lesson::with(['lessonValues' => function ($query) use ($selectedMonth, $selectedYear) {
-            $query->whereBetween('date', [
-                Carbon::create($selectedYear, $selectedMonth, 1)->startOfMonth()->toDateString(),
-                Carbon::create($selectedYear, $selectedMonth, 1)->endOfMonth()->toDateString()
-            ]);
+            $startDate = Carbon::create($selectedYear, $selectedMonth, 1)->startOfMonth()->toDateString();
+            $endDate = Carbon::create($selectedYear, $selectedMonth, 1)->endOfMonth()->toDateString();
+        
+            $query->whereBetween('date', [$startDate, $endDate]);
         }])
         ->where('school_id', $schoolId)
         ->where('class_id', $classId)
