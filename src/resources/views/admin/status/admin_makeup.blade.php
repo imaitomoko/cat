@@ -44,7 +44,7 @@
                 @foreach ($paginator as $item)
                     @php
                         $startTime = \Carbon\Carbon::parse($item['date'])->setTimeFromTimeString($item['start_time']);
-                        $now = \Carbon\Carbon::now();
+                        $now = \Carbon\Carbon::today();
                     @endphp
                     <tr>
                         <td>{{ \Carbon\Carbon::parse($item['date'])->format('Y-m-d')}} ({{ $item['weekday'] }})</td>

@@ -36,6 +36,10 @@
             </thead>
             <tbody>
                 @foreach ($rescheduleCandidates as $item)
+                    @php
+                        $startTime = \Carbon\Carbon::parse($item['date'])->setTimeFromTimeString($item['start_time']);
+                        $now = \Carbon\Carbon::today();
+                    @endphp
                     <tr>
                         <td>{{ \Carbon\Carbon::parse($item['date'])->format('Y-m-d')}} ({{ $item['weekday'] }})</td>
                         <td>{{ \Carbon\Carbon::parse($item['start_time'])->format('H:i') }}</td>
@@ -45,10 +49,10 @@
                                 <input type="hidden" name="date" value="{{ $item['date'] }}">
                                 <input type="hidden" name="lesson_id" value="{{ $item['lesson_id'] }}">
                                 <input type="hidden" name="status_id" value="{{ $statusId }}">
-                                @if($item['start_time']->isFuture())
-                                    <button class="button" type="submit">振替</button>
-                                @else
+                                @if ($startTime->isBefore($now))  <!-- 今日より前 -->
                                     <button class="closed_button" type="button" disabled>締切</button>
+                                @else  <!-- 今日以降 -->
+                                    <button class="button" type="submit">振替</button>
                                 @endif
                             </form>
                         </td>

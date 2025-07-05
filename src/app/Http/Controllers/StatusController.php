@@ -26,22 +26,26 @@ class StatusController extends Controller
         
         $userLessons = UserLesson::where('user_id', $user->id)->get();
 
-        $schools = [];
-        $classes = [];
+        $lessonData = [];
 
         // 該当するレッスンが見つかった場合、関連するschoolとclassを取得
         foreach ($userLessons as $userLesson) {
             $lesson = Lesson::find($userLesson->lesson_id);
+            if(!$lesson) continue;
+
             $school = School::find($lesson->school_id);
             $class = SchoolClass::find($lesson->class_id);
 
             if ($school && $class) {
-                $schools[] = $school;
-                $classes[] = $class;
+                $lessonData[] = [
+                    'userLesson' => $userLesson,
+                    'school' => $school,
+                    'class' => $class,
+                ];
             }
         }
 
-            return view('status', compact('user', 'schools', 'classes', 'userLessons'));
+            return view('status', compact('user', 'lessonData'));
     }
 
     private function generateLessonDates($lessons, $startDate, $endDate)

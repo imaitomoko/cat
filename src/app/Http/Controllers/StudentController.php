@@ -134,7 +134,11 @@ class StudentController extends Controller
             });
 
         // ページネーションを使用してデータを取得
-        $userLessons = $query->paginate(10);
+        $userLessons = $query->paginate(10)->appends([
+            'year' => $request->year,
+            'school_id' => $request->school_id,
+            'class_id' => $request->class_id,
+        ]);
 
         // ビューにデータを渡す
         return view('admin.student.student_search', compact('userLessons', 'schools', 'classes', 'years'));
