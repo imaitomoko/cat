@@ -12,11 +12,18 @@
     </div>
     <h3 class="user_name">{{ $user->user_name }}さん</h3>
     <p class="choose">クラスを選択してください</p>
-    @foreach($schools as $index => $school)
+    @foreach($lessonData as $data)
     <div class="user">
-        <a class="user_inner" href="{{ route('schedule.list', ['school_id' => $school->id, 'class_id' => $classes[$index]->id, 'lesson_id' => $userLessons[$index]->lesson_id]) }}">
-            <p class="user_text">{{ $school->school_name }}</p>
-            <p class="user_text">{{ $classes[$index]->class_name }}</p>
+        <a class="user_inner" href="{{ route('schedule.list', [
+            'school_id' => $data['school']->id,
+            'class_id' => $data['class']->id,
+            'lesson_id' => $data['userLesson']->lesson_id
+        ]) }}">
+            <p class="user_text">{{ $data['lesson']->year }}年</p>
+            <div class="school_class_group">
+                <p class="user_text">{{ $data['school']->school_name }}</p>
+                <p class="user_text">{{ $data['class']->class_name }}</p>
+            </div>
         </a>
     </div>
     @endforeach

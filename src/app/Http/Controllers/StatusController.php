@@ -23,6 +23,7 @@ class StatusController extends Controller
     public function index()
     {
         $user = Auth::user();
+        $today = Carbon::today();
         
         $userLessons = UserLesson::where('user_id', $user->id)->get();
 
@@ -36,11 +37,21 @@ class StatusController extends Controller
             $school = School::find($lesson->school_id);
             $class = SchoolClass::find($lesson->class_id);
 
+            if ($userLesson->end_date && Carbon::parse($userLesson->end_date)->lt($today)) {
+                continue;
+            }
+
+            $cutoffDate = Carbon::createFromDate($lesson->year + 1, 4, 1);
+            if ($today->gt($cutoffDate)) {
+                continue;
+            }
+
             if ($school && $class) {
                 $lessonData[] = [
                     'userLesson' => $userLesson,
                     'school' => $school,
                     'class' => $class,
+                    'lesson' => $lesson,
                 ];
             }
         }

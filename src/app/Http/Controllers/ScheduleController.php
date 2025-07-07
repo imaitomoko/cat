@@ -17,25 +17,40 @@ class ScheduleController extends Controller
     public function index()
     {
         $user = Auth::user();
+        $today = Carbon::today();
         
         $userLessons = UserLesson::where('user_id', $user->id)->get();
 
-        $schools = [];
-        $classes = [];
+        $lessonData = [];
 
         // 該当するレッスンが見つかった場合、関連するschoolとclassを取得
         foreach ($userLessons as $userLesson) {
             $lesson = Lesson::find($userLesson->lesson_id);
+            if (!$lesson) continue;
+
             $school = School::find($lesson->school_id);
             $class = SchoolClass::find($lesson->class_id);
 
-            if ($school && $class) {
-                $schools[] = $school;
-                $classes[] = $class;
+            if (!$school || !$class) continue;
+
+            if ($userLesson->end_date && Carbon::parse($userLesson->end_date)->lt($today)) {
+                continue;
             }
+
+            $cutoffDate = Carbon::createFromDate($lesson->year + 1, 4, 1);
+            if ($today->gte($cutoffDate)) {
+                continue;
+            }
+
+            $lessonData[] = [
+                'userLesson' => $userLesson,
+                'lesson' => $lesson,
+                'school' => $school,
+                'class' => $class,
+            ];
         }
 
-        return view('schedule', compact('user', 'schools', 'classes', 'userLessons'));
+        return view('schedule', compact('user', 'lessonData'));
     }
 
 

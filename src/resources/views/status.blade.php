@@ -15,8 +15,11 @@
     @foreach($lessonData as $data)
         <div class="user">
             <a class="user_inner" href="{{ route('status.list', ['user_lesson_id' => $data['userLesson']->id]) }}">
-                <p class="user_text">{{ $data['school']->school_name }}</p>
-                <p class="user_text">{{ $data['class']->class_name }}</p>
+                <p class="user_text">{{ $data['lesson']->year }}年</p>
+                <div class="school_class_group">
+                    <p class="user_text">{{ $data['school']->school_name }}</p>
+                    <p class="user_text">{{ $data['class']->class_name }}</p>
+                </div>
             </a>
         </div>
     @endforeach
