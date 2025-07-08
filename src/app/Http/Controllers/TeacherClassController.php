@@ -79,10 +79,7 @@ class TeacherClassController extends Controller
         $now = Carbon::now();
 
         // 過去または当日・開始時間経過済みかどうか
-        $isPast = ($date->isToday() && $startTime && $startTime->lt($now)) || $date->lt($now);
-
-        // 未来または当日・まだ始まっていない
-        $isFuture = ($date->isToday() && $startTime && $startTime->gt($now)) || $date->gt($now);
+        $isPast = ($date->isToday() && $startTime && $startTime->lt($now)) || ($date->lt($now)&& ! $date->isToday());
 
         if ($status === '欠席する') {
             return 'Absent'; // 過去でも未来でも一律 'Absent'
@@ -136,6 +133,11 @@ class TeacherClassController extends Controller
             })
             ->with(['user', 'lesson', 'userLessonStatus'])
             ->get()
+            ->filter(function ($userLesson) use ($searchDate) {
+                // end_date が存在し、検索日より前なら表示対象、それ以降なら除外
+                $endDate = optional($userLesson->user)->end_date;
+                return is_null($endDate) || Carbon::parse($endDate)->gte($searchDate);
+            })
             ->map(function ($userLesson) use ($searchDate, $weekdayJapanese, $now) {
                 $lesson = $userLesson->lesson;
                 $userLessonStatus = $userLesson->userLessonStatus->first(
@@ -161,6 +163,7 @@ class TeacherClassController extends Controller
                 return [
                     'userLesson' => $userLesson,
                     'user_lesson_status_id' => optional($userLessonStatus)->id,
+                    'reschedule_to' => optional($userLessonStatus)->reschedule_to,
                     'name' => optional($userLesson->user)->user_name ?? '不明',
                     'status' => $status,
                     'original_status' => $originalStatus,
@@ -178,6 +181,11 @@ class TeacherClassController extends Controller
         $rescheduledLessons = UserLessonStatus::whereDate('reschedule_to', $searchDate)
             ->with('reschedule')
             ->get()
+            ->filter(function ($status) {
+                $user = User::find($status->reschedule->user_id ?? null);
+                $endDate = optional($user)->end_date;
+                return is_null($endDate) || Carbon::parse($endDate)->gte(Carbon::parse($status->reschedule_to));
+            })
             ->map(function ($status) use ($searchDate, $weekdayJapanese) {
                 $reschedule = $status->reschedule;
 
@@ -205,8 +213,10 @@ class TeacherClassController extends Controller
                     'user_lesson_status_id' => $status->id,
                     'name' => optional($user)->user_name ?? '不明',
                     'status' => $displayStatus,
+                    'raw_status' => $rescheduleStatus, 
                     'rescheduleTo' => $searchDate,
                     'reschedule' => $reschedule,
+                    'original_date' => $status->date,
                     'isRescheduled' => true,
                     'is_makeup' => true,
                     'is_truency_active' => $rescheduleStatus === '欠席する',

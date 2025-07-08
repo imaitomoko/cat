@@ -124,7 +124,6 @@ Route::middleware(['auth:admin'])->group(function () {
         Route::get('/status/search', [AdminStatusController::class, 'search'])->name('status.search');
         Route::post('/status/absent/{userLessonId}', [AdminStatusController::class, 'toggleAbsence'])->name('status.absent');
         Route::get('/student/{id}', [AdminStatusController::class, 'detail'])->name('student.detail');
-
         Route::get('/status/makeup/{userLessonId}', [AdminStatusController::class, 'makeupShow'])->name('status.makeup');
         Route::post('/makeup/update/{userLessonStatusId}', [AdminStatusController::class, 'makeupUpdate'])->name('makeup.update');
         Route::delete('/reschedule/cancel/{rescheduleId}', [AdminStatusController::class, 'cancelReschedule'])->name('reschedule.cancel');

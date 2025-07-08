@@ -29,9 +29,9 @@
                             <input type="hidden" name="user_lesson_status_id" value="{{ $student['user_lesson_status_id'] }}">
                             <input type="hidden" name="is_makeup" value="{{ $student['is_makeup'] ? 1 : 0 }}">
                             @if ($student['is_makeup'])
-                                @if ($student['status'] === '欠席する')
+                                @if ($student['raw_status'] === '欠席する')
                                     <button type="submit">Cancel Truency</button>
-                                @elseif ($student['status'] === '未受講')
+                                @elseif ($student['raw_status'] === '未受講')
                                     <button type="submit">Truency</button>
                                 @else
                                     {{ $student['status'] }}
@@ -48,8 +48,10 @@
                         </form>
                     </td>
                     <td>
-                        @if ($student['is_makeup'])
-                            makeup
+                        @if ($student['is_makeup'] && $student['original_date'])
+                            makeup（{{ \Carbon\Carbon::parse($student['original_date'])->format('Y-m-d') }}）
+                        @elseif (!empty($student['reschedule_to']))
+                            {{ \Carbon\Carbon::parse($student['reschedule_to'])->format('Y-m-d') }}
                         @endif
                     </td>
                 </tr>
@@ -60,7 +62,7 @@
     </table>
 
     <div class="back__button">
-        <a class="back" href="{{ route('teacher.search') }}">back</a>
+        <a class="back" href="{{ route('teacher.classSearch') }}">back</a>
     </div>
 </div>
 @endsection

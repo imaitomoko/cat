@@ -38,7 +38,7 @@
         </form>
     </div>
     <div class="back__button">
-        <a href="{{ url()->previous() }}">back</a>
+        <a href="{{ route('admin.admin') }}">back</a>
     </div>
 </div>
 @endsection

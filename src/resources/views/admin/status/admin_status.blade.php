@@ -152,7 +152,11 @@
         {{ $paginatedStatuses->links() }}
     </div>
     <div class="back__button">
-        <a class="back" href="{{ url()->previous() }}">back</a>
+        <a class="back" href="{{ route('admin.status.search', [
+            'school_id' => $schoolId,
+            'class_id' => $classId,
+            'date' => $date,
+        ]) }}">back</a>
     </div>
 </div>
 @endsection

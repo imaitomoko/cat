@@ -35,7 +35,12 @@
             @if ($user)
                 <tr>
                     <td>
-                        <a href="{{ route('admin.student.detail', ['id' => $user->id]) }}">
+                        <a href="{{ route('admin.student.detail', [
+                            'id' => $user->id,
+                            'school_id' => $school->id,
+                            'class_id' => $class->id,
+                            'date' => $date->format('Y-m-d'),
+                        ]) }}">
                             {{ $user->user_name }}
                         </a>
                     </td>
@@ -71,7 +76,7 @@
     </tbody>
     </table> 
     <div class="back__button">
-        <a class="back" href="{{ url()->previous() }}">back</a>
+        <a class="back" href="{{ route('admin.class.index')}}">back</a>
     </div>
 </div>
 

@@ -181,7 +181,7 @@ class AdminStatusController extends Controller
         return view('admin.status.admin_class_list', compact('school', 'class', 'date', 'lessons', 'userLessons',  'weekdayJapanese','mergedUserLessons'));
     }
 
-    public function detail($id)
+    public function detail(Request $request, $id)
     {
         $student = User::with([
             'userLessons.lesson.lessonValues',
@@ -190,6 +190,10 @@ class AdminStatusController extends Controller
             'userLessons.userLessonStatus',
             'userLessons.userLessonStatus.reschedule.lesson',
         ])->findOrFail($id);
+
+        $schoolId = $request->input('school_id');
+        $classId = $request->input('class_id');
+        $date = $request->input('date');
 
         // 本日を基準に、1ヶ月前〜2ヶ月後を計算
         $now = \Carbon\Carbon::now();
@@ -271,7 +275,7 @@ class AdminStatusController extends Controller
             ['path' => request()->url(), 'query' => request()->query()]
         );
 
-        return view('admin.status.admin_status', compact('student', 'paginatedStatuses'));
+        return view('admin.status.admin_status', compact('student', 'paginatedStatuses', 'schoolId', 'classId', 'date'));
     }
 
     private static function getWeekdayNumber($dayName)
