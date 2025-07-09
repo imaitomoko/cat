@@ -62,7 +62,8 @@
     </table>
 
     <div class="back__button">
-        <a class="back" href="{{ route('teacher.classSearch') }}">back</a>
+        <a class="back" href="{{ route('teacher.classSearch.date', ['date' => $searchDate->format('Y-m-d')]) }}?school_id={{ $lesson->school_id }}">back</a>
+
     </div>
 </div>
 @endsection

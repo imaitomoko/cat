@@ -95,6 +95,12 @@ class TeacherClassController extends Controller
 
     public function classList(Lesson $lesson, Request $request)
     {
+        $lesson->load('schoolClass'); // ← 明示的にリレーションを読み込む
+
+        if (!$lesson->school_id || !$lesson->class_id) {
+            abort(404, 'レッスンに学校またはクラスの情報が設定されていません');
+        }
+        
         $searchDate = Carbon::parse($request->input('date') ?? now()->format('Y-m-d'));
         $lessonTime = $lesson->start_time1 ?? $lesson->start_time2;
         $schoolId = $lesson->school_id;
