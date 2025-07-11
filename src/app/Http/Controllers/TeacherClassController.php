@@ -53,7 +53,22 @@ class TeacherClassController extends Controller
                         ->first();
 
                     return !$lv || $lv->lesson_value !== '休校';
-                });
+                })
+                ->map(function ($lesson) use ($currentDay) {
+                 // 該当曜日に応じて表示用の時間を設定
+                    if ($lesson->day1 === $currentDay) {
+                        $lesson->actual_start_time = $lesson->start_time1;
+                    } elseif ($lesson->day2 === $currentDay) {
+                        $lesson->actual_start_time = $lesson->start_time2;
+                    } else {
+                        $lesson->actual_start_time = null; // 念のため
+                    }
+                return $lesson;
+                })
+                ->filter(fn($lesson) => !is_null($lesson->actual_start_time)) // nullのレッスンを除外
+                ->sortBy('actual_start_time')
+                ->values();
+
         }
 
         return view('teacher.teacher_class', compact('schools','selectedSchool', 'lessons', 'currentDate', 'previousDate', 'nextDate'));

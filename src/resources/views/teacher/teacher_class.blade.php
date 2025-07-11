@@ -43,7 +43,7 @@
             <tbody>
                 @forelse ($lessons as $lesson)
                     <tr>
-                        <td>{{ date('H:i', strtotime($lesson->start_time1 ?? $lesson->start_time2)) }}</td>
+                        <td>{{ date('H:i', strtotime($lesson->actual_start_time)) }}</td>
                         <td>
                             <a href="{{ route('teacher.class.list', ['lesson' => $lesson->id, 'date' => $currentDate->format('Y-m-d')]) }}" class="class-button">
                                 {{ $lesson->schoolClass->class_name }}
