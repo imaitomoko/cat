@@ -110,6 +110,7 @@ class TeacherClassController extends Controller
 
     public function classList(Lesson $lesson, Request $request)
     {
+        
         $lesson->load('schoolClass'); // ← 明示的にリレーションを読み込む
 
         if (!$lesson->school_id || !$lesson->class_id) {
@@ -161,9 +162,7 @@ class TeacherClassController extends Controller
             })
             ->map(function ($userLesson) use ($searchDate, $weekdayJapanese, $now) {
                 $lesson = $userLesson->lesson;
-                $userLessonStatus = $userLesson->userLessonStatus->first(
-                    fn ($s) => Carbon::parse($s->date)->isSameDay($searchDate)
-                );
+                $userLessonStatus = optional($userLesson->userLessonStatus)->first(fn ($s) => Carbon::parse($s->date)->isSameDay($searchDate));
 
                 $originalStatus = optional($userLessonStatus)->status;
                 $isManualAbsence = optional($userLessonStatus)->is_manual_absence;
