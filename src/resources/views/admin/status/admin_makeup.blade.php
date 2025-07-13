@@ -72,7 +72,7 @@
     </div>
 
     <div class="back__button">
-        <a class="back" href="{{ url()->previous() }}">back</a>
+        <a class="back" href="{{ route('admin.status.search') }}">back</a>
     </div>
 </div>
 

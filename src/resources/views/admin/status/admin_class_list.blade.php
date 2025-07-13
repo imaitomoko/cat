@@ -49,8 +49,6 @@
                         @if ($isReschedule)
                             {{-- 振替レッスン表示 --}}
                                 <span>{{ $status }}</span>
-            
-
                         @else
                             {{-- レギュラー生徒表示 --}}
                             @if ($status === '受講済み')
@@ -60,11 +58,15 @@
                             @elseif ($status === 'show_absent_button')
                                 <form method="POST" action="{{ route('admin.status.absent', ['userLessonId' => $lessonData['userLesson']->id]) }}">
                                     @csrf
+                                    <input type="hidden" name="date" value="{{ $date->format('Y-m-d') }}">
+                                    <input type="hidden" name="status" value="欠席する">
                                     <button class="btn btn-warning">欠席する</button>
                                 </form>
                             @elseif ($status === 'show_cancel_absent_button')
                                 <form method="POST" action="{{ route('admin.status.absent', ['userLessonId' => $lessonData['userLesson']->id]) }}">
                                 @csrf
+                                    <input type="hidden" name="date" value="{{ $date->format('Y-m-d') }}">
+                                    <input type="hidden" name="status" value="未受講">
                                     <button class="btn btn-secondary">欠席中止</button>
                                 </form>
                             @endif

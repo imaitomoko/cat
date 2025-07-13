@@ -71,12 +71,10 @@ button:hover {
     background-color: #218838;
 }
 
-.back__button {
+back__button {
     text-align: center;
-    align-items: center;
-    position: fixed;
-    bottom: 60px;
     width: 100px;
+    margin: 40px auto;
     padding: 5px;
     height: 35px;
     border: none;
@@ -84,8 +82,6 @@ button:hover {
     background: #808080;
     cursor: pointer;
     font-size: 15px;
-    left: 50%;
-    transform: translateX(-50%);
 }
 
 .back {

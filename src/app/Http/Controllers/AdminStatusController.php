@@ -298,7 +298,7 @@ class AdminStatusController extends Controller
     {
         $request->validate([
             'date' => 'required|date',
-            'status' => 'required|in:欠席する,未受講',
+            'status' => 'required|in:欠席する,未受講,休会中',
         ]);
 
         $date = $request->input('date'); // ← 日付を取得
@@ -361,7 +361,7 @@ class AdminStatusController extends Controller
         $endOfYear = $startOfYear->copy()->addYear()->subDay();
     
         $startDate = $absenceDate->copy()->subWeeks(2);
-        $endDate = $absenceDate->copy()->addMonth();
+        $endDate = $absenceDate->copy()->addMonth()->subDay();
 
         $selectedSchoolId = $request->input('school_id', $lesson->school_id); // デフォルトは現在の教
 

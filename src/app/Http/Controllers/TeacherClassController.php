@@ -161,8 +161,13 @@ class TeacherClassController extends Controller
                 return is_null($endDate) || Carbon::parse($endDate)->gte($searchDate);
             })
             ->map(function ($userLesson) use ($searchDate, $weekdayJapanese, $now) {
-                $lesson = $userLesson->lesson;
-                $userLessonStatus = optional($userLesson->userLessonStatus)->first(fn ($s) => Carbon::parse($s->date)->isSameDay($searchDate));
+                $lesson = optional($userLesson->lesson);
+                $user = optional($userLesson->user);
+                $userLessonStatuses = $userLesson->userLessonStatus ?? collect();
+
+                $userLessonStatus = $userLessonStatuses->first(
+                    fn ($s) => Carbon::parse($s->date)->isSameDay($searchDate)
+                );
 
                 $originalStatus = optional($userLessonStatus)->status;
                 $isManualAbsence = optional($userLessonStatus)->is_manual_absence;
