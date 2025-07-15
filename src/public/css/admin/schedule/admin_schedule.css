@@ -34,22 +34,7 @@ h2 {
     /* 文字を太く */
 }
 
-.back__button {
-    text-align: center;
-    align-items: center;
-    position: fixed;
-    bottom: 60px;
-    width: 100px;
-    padding: 5px;
-    height: 35px;
-    border: none;
-    border-radius: 3px;
-    background: #808080;
-    cursor: pointer;
-    font-size: 15px;
-    left: 50%;
-    transform: translateX(-50%);
-}
+
 
 /* 検索フォーム */
 .search {
@@ -108,6 +93,19 @@ h2 {
 
 .search button:hover {
     background-color: #0056b3;
+}
+
+.back__button {
+    text-align: center;
+    width: 100px;
+    margin: 40px auto;
+    padding: 5px;
+    height: 35px;
+    border: none;
+    border-radius: 3px;
+    background: #808080;
+    cursor: pointer;
+    font-size: 15px;
 }
 
 .back {

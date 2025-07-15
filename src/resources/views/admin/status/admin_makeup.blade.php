@@ -72,7 +72,7 @@
     </div>
 
     <div class="back__button">
-        <a class="back" href="{{ route('admin.status.search') }}">back</a>
+        <a class="back" href="{{ route('admin.student.detail', ['id' => $userLesson->user->id]) }}">back</a>
     </div>
 </div>
 
