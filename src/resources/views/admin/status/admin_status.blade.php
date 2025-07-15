@@ -153,9 +153,9 @@
     </div>
     <div class="back__button">
         <a class="back" href="{{ route('admin.status.search', [
-            'school_id' => $schoolId,
-            'class_id' => $classId,
-            'date' => $date,
+            'school_id' => request('school_id'),
+            'class_id' => request('class_id'),
+            'date' => request('date'),
         ]) }}">back</a>
     </div>
 </div>

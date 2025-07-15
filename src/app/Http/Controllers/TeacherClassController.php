@@ -206,8 +206,19 @@ class TeacherClassController extends Controller
         $rescheduledLessons = UserLessonStatus::whereDate('reschedule_to', $searchDate)
             ->with('reschedule')
             ->get()
-            ->filter(function ($status) {
-                $user = User::find($status->reschedule->user_id ?? null);
+            ->filter(function ($status) use ($schoolId, $classId) {
+                $reschedule = $status->reschedule;
+
+                if (!$reschedule) return false;
+
+                $lesson = Lesson::find($reschedule->lesson_id);
+
+                // 指定された school_id と class_id に一致しなければ除外
+                if (!$lesson || $lesson->school_id !== $schoolId || $lesson->class_id !== $classId) {
+                    return false;
+                }
+
+                $user = User::find($reschedule->user_id);
                 $endDate = optional($user)->end_date;
                 return is_null($endDate) || Carbon::parse($endDate)->gte(Carbon::parse($status->reschedule_to));
             })
