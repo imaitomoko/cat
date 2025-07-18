@@ -207,7 +207,7 @@ class TeacherClassController extends Controller
             ->with(['reschedule.lesson', 'reschedule.user'])
             ->get()
             ->filter(function ($status) use ($schoolId, $classId) {
-                $reschedule = $status->reschedule;
+                $reschedule = optional($status->reschedule()->first());
                 $lesson = optional($reschedule)->lesson;
                 $user = optional($reschedule)->user;
 
