@@ -208,8 +208,8 @@ class TeacherClassController extends Controller
             ->get()
             ->filter(function ($status) use ($schoolId, $classId) {
                 $reschedule = optional($status->reschedule()->first());
-                $lesson = optional($reschedule)->lesson;
-                $user = optional($reschedule)->user;
+                $lesson = optional($reschedule->lesson);
+                $user = optional($reschedule->user);
 
                 if (!$reschedule || !$lesson || !$user) return false;
 
@@ -223,9 +223,9 @@ class TeacherClassController extends Controller
             })
 
             ->map(function ($status) use ($searchDate, $weekdayJapanese) {
-                $reschedule = $status->reschedule;
-                $lesson = optional($reschedule)->lesson;
-                $user = optional($reschedule)->user;
+                $reschedule = optional($status->reschedule);
+                $lesson = optional($reschedule->lesson);
+                $user = optional($reschedule->user);
 
                 if (!$lesson || !$user) return null;
 
