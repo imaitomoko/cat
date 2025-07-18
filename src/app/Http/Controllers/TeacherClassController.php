@@ -211,24 +211,15 @@ class TeacherClassController extends Controller
                 $lesson = optional($reschedule)->lesson;
                 $user = optional($reschedule)->user;
 
-                if (!$reschedule) return false;
+                if (!$reschedule || !$lesson || !$user) return false;
 
-                $lesson = Lesson::find($reschedule->lesson_id);
-
-                // reschedule, lesson, user のいずれかが存在しない場合は除外
-                if (!$reschedule || !$lesson || !$user) {
-                    return false;
-                }
-
-                 // 学校・クラスの一致チェック
                 if ($lesson->school_id !== $schoolId || $lesson->class_id !== $classId) {
                     return false;
                 }
 
                 // 在籍終了日チェック
                 $endDate = $user->end_date;
-                $rescheduleTo = $status->reschedule_to;
-                return is_null($endDate) || ( $rescheduleTo && Carbon::parse($endDate)->gte(Carbon::parse($rescheduleTo)) );
+                return is_null($endDate) || Carbon::parse($endDate)->gte(Carbon::parse($status->reschedule_to));
             })
 
             ->map(function ($status) use ($searchDate, $weekdayJapanese) {
@@ -236,16 +227,7 @@ class TeacherClassController extends Controller
                 $lesson = optional($reschedule)->lesson;
                 $user = optional($reschedule)->user;
 
-                // reschedule が存在しない場合はスキップ
-                if (!$reschedule) return null;
-
-                  // lesson や user はリレーションではなく ID から取得する
-                $lesson = Lesson::find($reschedule->lesson_id);
-                $user = User::find($reschedule->user_id);
-
-                if (!$reschedule || !$lesson || !$user) {
-                    return null;
-                }
+                if (!$lesson || !$user) return null;
 
                 $startTime = $this->getStartTime($lesson, $searchDate, $weekdayJapanese);
                 $rescheduleStatus = $reschedule->reschedule_status ?? '未受講';
