@@ -30,7 +30,7 @@ class StudentController extends Controller
     {
         $validated = $request->validate([
             'user_id' => 'required|unique:users,user_id',
-            'user_name' => 'required|string|max:255',
+            'user_name' => 'required|string|max:25',
             'email' => 'nullable|email',
             'password' => 'required|string|min:6',
             'lessons.*.lesson_id' => 'required|string|exists:lessons,lesson_id',
@@ -183,7 +183,7 @@ class StudentController extends Controller
 
         $validated = $request->validate([
             'user_id' => 'required|exists:users,user_id',
-            'user_name' => 'required|string|max:255',
+            'user_name' => 'required|string|max:25',
             'email' => 'nullable|email',
             'password' => 'nullable|string|min:6',
             'lesson_ids' => 'required|array', // 複数のレッスンIDを受け付ける

@@ -204,26 +204,37 @@ class TeacherClassController extends Controller
             });
 
         $rescheduledLessons = UserLessonStatus::whereDate('reschedule_to', $searchDate)
-            ->with('reschedule')
+            ->with(['reschedule.lesson', 'reschedule.user'])
             ->get()
             ->filter(function ($status) use ($schoolId, $classId) {
                 $reschedule = $status->reschedule;
+                $lesson = optional($reschedule)->lesson;
+                $user = optional($reschedule)->user;
 
                 if (!$reschedule) return false;
 
                 $lesson = Lesson::find($reschedule->lesson_id);
 
-                // 指定された school_id と class_id に一致しなければ除外
-                if (!$lesson || $lesson->school_id !== $schoolId || $lesson->class_id !== $classId) {
+                // reschedule, lesson, user のいずれかが存在しない場合は除外
+                if (!$reschedule || !$lesson || !$user) {
                     return false;
                 }
 
-                $user = User::find($reschedule->user_id);
-                $endDate = optional($user)->end_date;
-                return is_null($endDate) || Carbon::parse($endDate)->gte(Carbon::parse($status->reschedule_to));
+                 // 学校・クラスの一致チェック
+                if ($lesson->school_id !== $schoolId || $lesson->class_id !== $classId) {
+                    return false;
+                }
+
+                // 在籍終了日チェック
+                $endDate = $user->end_date;
+                $rescheduleTo = $status->reschedule_to;
+                return is_null($endDate) || ( $rescheduleTo && Carbon::parse($endDate)->gte(Carbon::parse($rescheduleTo)) );
             })
+
             ->map(function ($status) use ($searchDate, $weekdayJapanese) {
                 $reschedule = $status->reschedule;
+                $lesson = optional($reschedule)->lesson;
+                $user = optional($reschedule)->user;
 
                 // reschedule が存在しない場合はスキップ
                 if (!$reschedule) return null;
@@ -232,8 +243,11 @@ class TeacherClassController extends Controller
                 $lesson = Lesson::find($reschedule->lesson_id);
                 $user = User::find($reschedule->user_id);
 
-                $startTime = $this->getStartTime($lesson, $searchDate, $weekdayJapanese);
+                if (!$reschedule || !$lesson || !$user) {
+                    return null;
+                }
 
+                $startTime = $this->getStartTime($lesson, $searchDate, $weekdayJapanese);
                 $rescheduleStatus = $reschedule->reschedule_status ?? '未受講';
 
                 if ($rescheduleStatus === '未受講' && $startTime && $startTime->isPast()) {
