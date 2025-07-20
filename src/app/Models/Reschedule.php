@@ -31,4 +31,22 @@ class Reschedule extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    public function userLessonStatus()
+    {
+        return $this->belongsTo(UserLessonStatus::class);
+    }
+
+    public function userLesson()
+    {
+        return $this->hasOneThrough(
+            UserLesson::class,       // 取得したい最終モデル
+            UserLessonStatus::class, // 中間モデル
+            'id',                    // 中間モデルの主キー（user_lesson_status.id）
+            'id',                    // 最終モデルの主キー（user_lesson.id）
+            'user_lesson_status_id',// Rescheduleにある外部キー
+            'user_lesson_id'         // 中間モデルにある外部キー
+        );
+    }
+
+
 }

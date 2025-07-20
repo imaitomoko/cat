@@ -204,12 +204,13 @@ class TeacherClassController extends Controller
             });
 
         $rescheduledLessons = UserLessonStatus::whereDate('reschedule_to', $searchDate)
-            ->with(['reschedule.lesson', 'reschedule.user'])
+            ->with(['reschedule.lesson', 'reschedule.user', 'reschedule.userLesson'])
             ->get()
             ->filter(function ($status) use ($schoolId, $classId) {
-                $reschedule = optional($status->reschedule()->first());
+                $reschedule = optional($status->reschedule);
                 $lesson = optional($reschedule->lesson);
                 $user = optional($reschedule->user);
+                $userLesson = optional($reschedule->userLesson);
 
                 if (!$reschedule || !$lesson || !$user) return false;
 
@@ -218,16 +219,21 @@ class TeacherClassController extends Controller
                 }
 
                 // 在籍終了日チェック
-                $endDate = $user->end_date;
+                $endDate = $userLesson->end_date;
+
                 return is_null($endDate) || Carbon::parse($endDate)->gte(Carbon::parse($status->reschedule_to));
             })
-
             ->map(function ($status) use ($searchDate, $weekdayJapanese) {
-                $reschedule = optional($status->reschedule);
-                $lesson = optional($reschedule->lesson);
-                $user = optional($reschedule->user);
+                $reschedule = $status->reschedule;
 
-                if (!$lesson || !$user) return null;
+                if (!$reschedule || !$reschedule->lesson || !$reschedule->user) { 
+                    return null;
+                }
+
+                $lesson = $reschedule->lesson;
+                $user = $reschedule->user;
+
+
 
                 $startTime = $this->getStartTime($lesson, $searchDate, $weekdayJapanese);
                 $rescheduleStatus = $reschedule->reschedule_status ?? '未受講';
@@ -254,6 +260,7 @@ class TeacherClassController extends Controller
                     'is_truency_active' => $rescheduleStatus === '欠席する',
                     'show_button' => $rescheduleStatus === '未受講' && $startTime && $startTime->isFuture(),
                 ];
+
             })
             ->filter();
 
