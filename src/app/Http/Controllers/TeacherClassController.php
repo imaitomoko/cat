@@ -110,8 +110,7 @@ class TeacherClassController extends Controller
 
     public function classList(Lesson $lesson, Request $request)
     {
-        
-        $lesson->load('schoolClass'); // ← 明示的にリレーションを読み込む
+        $lesson->load('school','schoolClass'); // ← 明示的にリレーションを読み込む
 
         if (!$lesson->school_id || !$lesson->class_id) {
             abort(404, 'レッスンに学校またはクラスの情報が設定されていません');
@@ -265,8 +264,7 @@ class TeacherClassController extends Controller
             ->filter();
 
         // 統合
-        $mergedUserLessons = $regularLessons->merge($rescheduledLessons);
-
+        $mergedUserLessons = $regularLessons->merge($rescheduledLessons)->values();
 
         return view('teacher.teacher_class_list', [
             'students' => $mergedUserLessons,

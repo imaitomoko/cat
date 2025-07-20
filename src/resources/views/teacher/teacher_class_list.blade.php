@@ -20,7 +20,7 @@
             </tr>
         </thead>
         <tbody>
-            @forelse ($students as $student)
+            @forelse ($students as $index => $student)
                 <tr>
                     <td>{{ $student['name'] }}</td>
                     <td>
