@@ -9,7 +9,7 @@ class UserLessonStatus extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_lesson_id', 'date', 'status', 'reschedule_to'];
+    protected $fillable = ['user_lesson_id', 'date', 'status', 'reschedule_to','is_manual_absence',];
 
     public function userLesson()
     {

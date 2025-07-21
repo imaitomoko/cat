@@ -117,160 +117,83 @@ class TeacherClassController extends Controller
         }
         
         $searchDate = Carbon::parse($request->input('date') ?? now()->format('Y-m-d'));
-        $lessonTime = $lesson->start_time1 ?? $lesson->start_time2;
         $schoolId = $lesson->school_id;
         $classId = $lesson->class_id;
-        $now = Carbon::now();
+        $dayOfWeek = $searchDate->isoFormat('ddd'); 
 
-        $weekdayMap = [
-            'Sunday'    => '日',
-            'Monday'    => '月',
-            'Tuesday'   => '火',
-            'Wednesday' => '水',
-            'Thursday'  => '木',
-            'Friday'    => '金',
-            'Saturday'  => '土'
-        ];
-        $weekdayJapanese = $weekdayMap[$searchDate->format('l')] ?? null;
+        $isHoliday = LessonValue::whereHas('lesson', function ($q) use ($schoolId, $classId) {
+            $q->where('school_id', $schoolId)->where('class_id', $classId);
+        })->whereDate('date', $searchDate)->where('lesson_value', '休校')->exists();
 
-        $lessonValues = LessonValue::whereHas('lesson', function ($query) use ($schoolId, $classId) {
-            $query->where('school_id', $schoolId)->where('class_id', $classId);
-        })->get();
+        if ($isHoliday) {
+            return view('teacher.teacher_class_list', [
+                'students' => collect(),
+                'lesson' => $lesson,
+                'searchDate' => $searchDate,
+            ]);
+        }
 
-        // lesson_value が「休校」でないレッスンを取得
-        $lessons = Lesson::where('school_id', $schoolId)
+        $lessonIds = Lesson::where('school_id', $schoolId)
             ->where('class_id', $classId)
-            ->whereHas('lessonValues', function ($query) use ($searchDate) {
-                $query->whereDate('date', $searchDate) // lessonValues の date を基準にする
-                        ->where('lesson_value', '!=', '休校');
-            })
-            ->pluck('id')
-            ->toArray();
+            ->where(function ($query) use ($dayOfWeek) {
+                $query->where('day1', $dayOfWeek)
+                        ->orWhere('day2', $dayOfWeek);
+                })
+            ->pluck('id');
 
-
-        $regularLessons = UserLesson::whereIn('lesson_id', $lessons)
-            ->whereHas('userLessonStatus', function ($query) use ($searchDate) {
-                $query->whereDate('date', $searchDate);
-            })
-            ->with(['user', 'lesson', 'userLessonStatus'])
+        $regularLessons = UserLesson::whereIn('lesson_id', $lessonIds)
+            ->with(['user', 'userLessonStatus' => fn($q) => $q->whereDate('date', $searchDate)])
             ->get()
-            ->filter(function ($userLesson) use ($searchDate) {
-                // end_date が存在し、検索日より前なら表示対象、それ以降なら除外
-                $endDate = optional($userLesson->user)->end_date;
-                return is_null($endDate) || Carbon::parse($endDate)->gte($searchDate);
+            ->filter(function ($ul) use ($searchDate) {
+                $start = $ul->start_date ? Carbon::parse($ul->start_date) : null;
+                $end = $ul->end_date ? Carbon::parse($ul->end_date) : null;
+
+                return (!$start || $start->lte($searchDate)) && (!$end || $end->gte($searchDate));
             })
-            ->map(function ($userLesson) use ($searchDate, $weekdayJapanese, $now) {
-                $lesson = optional($userLesson->lesson);
-                $user = optional($userLesson->user);
-                $userLessonStatuses = $userLesson->userLessonStatus ?? collect();
-
-                $userLessonStatus = $userLessonStatuses->first(
-                    fn ($s) => Carbon::parse($s->date)->isSameDay($searchDate)
-                );
-
-                $originalStatus = optional($userLessonStatus)->status;
-                $isManualAbsence = optional($userLessonStatus)->is_manual_absence;
-
-                // 開始時間の算出
-                $startTime = $this->getStartTime($lesson, $searchDate, $weekdayJapanese);
-
-                $isMakeup = $userLesson->is_makeup ?? false;
-
-
-                $status = $originalStatus;
-
-                if (!$isMakeup) {
-                    // レギュラー生徒のみ normalizeStatus() を適用
-                    $status = $this->normalizeStatus($status, $searchDate, $startTime);
-                }
+            ->map(function ($ul) use ($searchDate, $dayOfWeek) {
+                $status = $ul->userLessonStatus->first();
+                $isManual = $status?->is_manual_absence ?? false;
+                $statVal = $status?->status;
 
                 return [
-                    'userLesson' => $userLesson,
-                    'user_lesson_status_id' => optional($userLessonStatus)->id,
-                    'reschedule_to' => optional($userLessonStatus)->reschedule_to,
-                    'name' => optional($userLesson->user)->user_name ?? '不明',
-                    'status' => $status,
-                    'original_status' => $originalStatus,
-                    'reschedule' => null,
-                    'rescheduleTo' => null,
-                    'isRescheduled' => false,
-                    'is_makeup' => $isMakeup,
-                    'is_manual_absence' => $isManualAbsence,
-                    'is_truency_active' => $originalStatus === '欠席する' && $isManualAbsence,
-                    'show_button' => $status === '未受講' && $startTime && $startTime->isFuture(),
-
+                    'user_lesson_status_id' => $status?->id,
+                    'name' => $ul->user->user_name ?? '不明',
+                    'status' => $statVal === '欠席する' ? 'Absent' : $statVal,
+                    'raw_status' => $statVal,
+                    'is_makeup' => false,
+                    'is_truency_active' => $statVal === '無連絡欠席' && $isManual,
+                    'show_button' => $statVal === '未受講',
+                    'original_date' => null,
+                    'reschedule_to' => $status?->reschedule_to,
                 ];
             });
 
-        $rescheduledLessons = UserLessonStatus::whereDate('reschedule_to', $searchDate)
-            ->with(['reschedule.lesson', 'reschedule.user', 'reschedule.userLesson'])
+        $rescheduled = UserLessonStatus::whereDate('reschedule_to', $searchDate)
+            ->with(['reschedule.lesson', 'reschedule.user'])
             ->get()
-            ->filter(function ($status) use ($schoolId, $classId) {
-                $reschedule = optional($status->reschedule);
-                $lesson = optional($reschedule->lesson);
-                $user = optional($reschedule->user);
-                $userLesson = optional($reschedule->userLesson);
-
-                if (!$reschedule || !$lesson || !$user) return false;
-
-                if ($lesson->school_id !== $schoolId || $lesson->class_id !== $classId) {
-                    return false;
-                }
-
-                // 在籍終了日チェック
-                $endDate = $userLesson->end_date;
-
-                return is_null($endDate) || Carbon::parse($endDate)->gte(Carbon::parse($status->reschedule_to));
+            ->filter(function ($uls) use ($schoolId, $classId) {
+                $res = $uls->reschedule;
+                return $res && $res->lesson->school_id === $schoolId && $res->lesson->class_id === $classId;
             })
-            ->map(function ($status) use ($searchDate, $weekdayJapanese) {
-                $reschedule = $status->reschedule;
-
-                if (!$reschedule || !$reschedule->lesson || !$reschedule->user) { 
-                    return null;
-                }
-
-                $lesson = $reschedule->lesson;
-                $user = $reschedule->user;
-
-
-
-                $startTime = $this->getStartTime($lesson, $searchDate, $weekdayJapanese);
-                $rescheduleStatus = $reschedule->reschedule_status ?? '未受講';
-
-                if ($rescheduleStatus === '未受講' && $startTime && $startTime->isPast()) {
-                    $displayStatus = 'Attended';
-                } elseif ($rescheduleStatus === '欠席する') {
-                    $displayStatus = 'Absent';
-                } else {
-                    $displayStatus = $rescheduleStatus;
-                }
-
+            ->map(function ($uls) use ($searchDate) {
+                $res = $uls->reschedule;
+                $status = $res->reschedule_status ?? '未受講';
                 return [
-                    'userLesson' => null,
-                    'user_lesson_status_id' => $status->id,
-                    'name' => optional($user)->user_name ?? '不明',
-                    'status' => $displayStatus,
-                    'raw_status' => $rescheduleStatus, 
-                    'rescheduleTo' => $searchDate,
-                    'reschedule' => $reschedule,
-                    'original_date' => $status->date,
-                    'isRescheduled' => true,
+                    'user_lesson_status_id' => $uls->id,
+                    'name' => $res->user->user_name ?? '不明',
+                    'status' => $status === '欠席する' ? 'Absent' : $status,
+                    'raw_status' => $status,
                     'is_makeup' => true,
-                    'is_truency_active' => $rescheduleStatus === '欠席する',
-                    'show_button' => $rescheduleStatus === '未受講' && $startTime && $startTime->isFuture(),
+                    'is_truency_active' => $status === '無連絡欠席',
+                    'show_button' => $status === '未受講',
+                    'original_date' => $uls->date,
                 ];
-
-            })
-            ->filter();
+            });
 
         // 統合
-        $mergedUserLessons = $regularLessons->merge($rescheduledLessons)->values();
+        $students = $regularLessons->merge($rescheduled)->values();
 
-        return view('teacher.teacher_class_list', [
-            'students' => $mergedUserLessons,
-            'lesson' => $lesson,
-            'searchDate' => $searchDate
-        ]);
+        return view('teacher.teacher_class_list', compact('lesson', 'searchDate', 'students'));
     }
 
     public function toggleStatus(Request $request)
@@ -286,7 +209,7 @@ class TeacherClassController extends Controller
             }
 
             // ステータスをトグル
-            $reschedule->reschedule_status = ($reschedule->reschedule_status === '未受講') ? '欠席する' : '未受講';
+            $reschedule->reschedule_status = ($reschedule->reschedule_status === '未受講') ? '無連絡欠席' : '未受講';
             $reschedule->save();
         } else {
             // 通常の生徒：user_lesson_statuses テーブルを更新
@@ -296,9 +219,9 @@ class TeacherClassController extends Controller
             }
 
             if ($uls->status === '未受講') {
-                $uls->status = '欠席する';
+                $uls->status = '無連絡欠席';
                 $uls->is_manual_absence = true; // 手動で欠席にした
-            } elseif ($uls->status === '欠席する' && $uls->is_manual_absence) {
+            } elseif ($uls->status === '無連絡欠席' && $uls->is_manual_absence) {
                 $uls->status = '未受講';
                 $uls->is_manual_absence = false; // 元に戻す
             }

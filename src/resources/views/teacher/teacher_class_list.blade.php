@@ -20,7 +20,7 @@
             </tr>
         </thead>
         <tbody>
-            @forelse ($students as $index => $student)
+            @forelse ($students as $student)
                 <tr>
                     <td>{{ $student['name'] }}</td>
                     <td>
@@ -28,22 +28,14 @@
                             @csrf
                             <input type="hidden" name="user_lesson_status_id" value="{{ $student['user_lesson_status_id'] }}">
                             <input type="hidden" name="is_makeup" value="{{ $student['is_makeup'] ? 1 : 0 }}">
-                            @if ($student['is_makeup'])
-                                @if ($student['raw_status'] === '欠席する')
-                                    <button type="submit">Cancel Truency</button>
-                                @elseif ($student['raw_status'] === '未受講')
-                                    <button type="submit">Truency</button>
-                                @else
-                                    {{ $student['status'] }}
-                                @endif
+                            @if ($student['raw_status'] === '欠席する')
+                                Absent
+                            @elseif ($student['is_truency_active'])
+                                <button class="cancel_truency" type="submit">Cancel Truency</button>
+                            @elseif ($student['show_button'])
+                                <button class="truency" type="submit">Truency</button>
                             @else
-                                @if ($student['is_truency_active'])
-                                    <button type="submit">Cancel Truency</button>
-                                @elseif ($student['show_button'])
-                                    <button type="submit">Truency</button>
-                                @else
-                                    {{ $student['status'] }}
-                                @endif
+                                {{ $student['status'] }}
                             @endif
                         </form>
                     </td>

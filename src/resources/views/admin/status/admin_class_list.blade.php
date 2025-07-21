@@ -55,6 +55,8 @@
                                 <span class="text-green-600">受講済み</span>
                             @elseif ($status === '欠席')
                                 <span class="text-red-600">欠席</span>
+                            @elseif ($status === '無連絡欠席')
+                                <span class="text-red-600">無連絡欠席</span>
                             @elseif ($status === 'show_absent_button')
                                 <form method="POST" action="{{ route('admin.status.absent', ['userLessonId' => $lessonData['userLesson']->id]) }}">
                                     @csrf

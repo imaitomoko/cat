@@ -361,7 +361,7 @@ class AdminStatusController extends Controller
         $endOfYear = $startOfYear->copy()->addYear()->subDay();
     
         $startDate = $absenceDate->copy()->subWeeks(2);
-        $endDate = $absenceDate->copy()->addMonth()->subDay();
+        $endDate = $absenceDate->copy()->addWeeks(4)->subDay();
 
         $selectedSchoolId = $request->input('school_id', $lesson->school_id); // デフォルトは現在の教
 
