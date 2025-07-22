@@ -175,6 +175,8 @@ class AdminStatusController extends Controller
         $regularLessons = collect($mergedUserLessons)->filter(fn($d) => isset($d['userLesson']) && empty($d['reschedule']));
         $reschedules = collect($mergedUserLessons)->filter(fn($d) => !empty($d['reschedule']));
 
+        $regularLessons = collect($regularLessons);
+        $rescheduled = collect($rescheduled);
         $mergedUserLessons = $regularLessons->merge($reschedules);
 
 
