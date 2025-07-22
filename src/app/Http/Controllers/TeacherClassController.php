@@ -191,6 +191,8 @@ class TeacherClassController extends Controller
             });
 
         // 統合
+        $regularLessons = collect($regularLessons);
+        $rescheduled = collect($rescheduled);
         $students = $regularLessons->merge($rescheduled)->values();
 
         return view('teacher.teacher_class_list', compact('lesson', 'searchDate', 'students'));
