@@ -33,11 +33,20 @@ class ScheduleController extends Controller
 
             if (!$school || !$class) continue;
 
-            if ($userLesson->end_date && Carbon::parse($userLesson->end_date)->lt($today)) {
+            $startDate = $userLesson->start_date ? Carbon::parse($userLesson->start_date) : null;
+            $endDate = $userLesson->end_date ? Carbon::parse($userLesson->end_date) : null;
+            $cutoffDate = Carbon::createFromDate($lesson->year + 1, 4, 1);
+
+            if ($startDate && $today->lt($startDate)) {
+                  // まだ開始していない場合は除外
                 continue;
             }
 
-            $cutoffDate = Carbon::createFromDate($lesson->year + 1, 4, 1);
+            if ($endDate && $today->gt($endDate)) {
+                // 終了している場合は除外
+                continue;
+            } 
+            
             if ($today->gte($cutoffDate)) {
                 continue;
             }
