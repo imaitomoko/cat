@@ -16,6 +16,7 @@ use Laravel\Fortify\Fortify;
 use Laravel\Fortify\Contracts\LoginResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Validation\Rules\Password;
 
 
 
@@ -35,6 +36,10 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Password::defaults(function () {
+            return Password::min(3);
+        });
+
         Fortify::createUsersUsing(CreateNewUser::class);
 
         Fortify::loginView(function () {
