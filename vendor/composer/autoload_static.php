@@ -7,6 +7,10 @@ namespace Composer\Autoload;
 class ComposerStaticInitd2e0a434cf90d089e32b1786328d6b50
 {
     public static $prefixLengthsPsr4 = array (
+        'T' => 
+        array (
+            'Tests\\' => 6,
+        ),
         'P' => 
         array (
             'Psr\\Log\\' => 8,
@@ -16,10 +20,20 @@ class ComposerStaticInitd2e0a434cf90d089e32b1786328d6b50
         array (
             'Doctrine\\Deprecations\\' => 22,
             'Doctrine\\DBAL\\' => 14,
+            'Database\\Seeders\\' => 17,
+            'Database\\Factories\\' => 19,
+        ),
+        'A' => 
+        array (
+            'App\\' => 4,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
+        'Tests\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/tests',
+        ),
         'Psr\\Log\\' => 
         array (
             0 => __DIR__ . '/..' . '/psr/log/src',
@@ -35,6 +49,18 @@ class ComposerStaticInitd2e0a434cf90d089e32b1786328d6b50
         'Doctrine\\DBAL\\' => 
         array (
             0 => __DIR__ . '/..' . '/doctrine/dbal/src',
+        ),
+        'Database\\Seeders\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/database/seeders',
+        ),
+        'Database\\Factories\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/database/factories',
+        ),
+        'App\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/app',
         ),
     );
 
