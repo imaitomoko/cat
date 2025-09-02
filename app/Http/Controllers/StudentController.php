@@ -32,7 +32,7 @@ class StudentController extends Controller
             'user_id' => 'required|unique:users,user_id',
             'user_name' => 'required|string|max:25',
             'email' => 'nullable|email',
-            'password' => 'required|string|min:6',
+            'password' => 'required|string|min:2',
             'lessons.*.lesson_id' => 'required|string|exists:lessons,lesson_id',
             'lessons.*.start_date' => 'required|date',
             'lessons.*.end_date' => 'nullable|date|after_or_equal:lessons.*.start_date',
