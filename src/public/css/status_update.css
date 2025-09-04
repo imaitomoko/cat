@@ -1,0 +1,164 @@
+.content {
+    width: 100%;
+    margin: 20px auto;
+    max-width: 100%;
+    padding: 0 16px;
+    box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+    .content {
+        max-width: 720px;
+    }
+}
+
+.heading {
+    text-align: center;
+    color: #4f4c4c;
+}
+
+.school {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+select#school {
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    margin-left: 8px;
+}
+
+label[for="school"] {
+    font-weight: bold;
+    color: blue;
+    margin-right: 8px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    border: 2px solid #ddd;
+    text-align: center;
+    padding: 8px;
+}
+
+th {
+    background-color: #10990c;
+    color: #fff;
+}
+
+.button {
+    padding: 6px 12px;
+    background-color: blue;
+    border: none;
+    border-radius: 3px;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.closed_button {
+    padding: 6px 12px;
+    background-color: rgb(178, 178, 226);
+    border: none;
+    border-radius: 3px;
+    color: white;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+@media (max-width: 768px) {
+
+    table,
+    thead,
+    tbody,
+    th,
+    td,
+    tr {
+        display: block;
+        width: 100%;
+    }
+
+    thead tr {
+        display: none;
+        /* ヘッダー非表示 */
+    }
+
+    tr {
+        margin-bottom: 15px;
+        border-bottom: 2px solid #ccc;
+    }
+
+    td {
+        text-align: left;
+        padding-left: 50%;
+        position: relative;
+    }
+
+    td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 10px;
+        top: 8px;
+        font-weight: bold;
+        white-space: nowrap;
+    }
+
+    .button,
+    .closed_button {
+        width: 100%;
+        font-size: 16px;
+        margin-top: 8px;
+    }
+}
+
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.pagination .page-link {
+    color: #007bff;
+    padding: 8px 12px;
+    margin: 0 4px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    text-decoration: none;
+}
+
+.pagination .page-link:hover {
+    background-color: #f0f0f0;
+}
+
+.pagination .active .page-link {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.back__button {
+    text-align: center;
+    width: 100px;
+    margin: 40px auto;
+    padding: 5px;
+    height: 35px;
+    border: none;
+    border-radius: 3px;
+    background: #808080;
+    cursor: pointer;
+    font-size: 15px;
+}
+
+.back {
+    color: #fff;
+    text-decoration: none;
+}

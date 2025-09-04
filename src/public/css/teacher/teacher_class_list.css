@@ -1,0 +1,83 @@
+.content {
+    width: 100%;
+    margin: 0 auto;
+    padding: 20px 15px;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+    .content {
+        max-width: 720px;
+    }
+}
+
+.heading {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    font-family: Arial, sans-serif;
+}
+
+th {
+    padding: 12px;
+    border: 1px solid #ccc;
+    text-align: center;
+    color: #fff;
+}
+
+td {
+    padding: 12px;
+    border: 1px solid #ccc;
+    text-align: center;
+}
+
+thead {
+    background-color: #4CAF50;
+}
+
+tr:nth-child(even) {
+    background-color: #fafafa;
+}
+
+.truency {
+    background-color: blue;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.cancel_truency {
+    background-color: orange;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+
+.back__button {
+    text-align: center;
+    width: 100px;
+    margin: 40px auto;
+    padding: 5px;
+    height: 35px;
+    border: none;
+    border-radius: 3px;
+    background: #808080;
+    cursor: pointer;
+    font-size: 15px;
+}
+
+.back {
+    color: #fff;
+    text-decoration: none;
+}

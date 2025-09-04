@@ -1,0 +1,218 @@
+.content {
+    margin: 0 auto;
+    padding: 20px 15px;
+    max-width: 1230px;
+}
+
+.heading {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+h2 {
+    color: #4f4c4c;
+}
+
+/* 検索フォーム */
+.search {
+    margin-bottom: 20px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.search form {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    /* 項目間のスペース */
+    flex-wrap: wrap;
+    /* 幅が狭い場合に折り返し */
+}
+
+.search .form-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    /* 項目を均等に広げる */
+    width: 150px;
+    /* 最小幅を指定 */
+    white-space: nowrap;
+}
+
+.search .form-group label {
+    margin-bottom: 5px;
+    width: 120px;
+    text-align: right;
+}
+
+
+.search input[type="number"],
+.search select {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+/* ボタン */
+.search button {
+    padding: 6px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.search button:hover {
+    background-color: #0056b3;
+}
+/* テーブル */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.table th, .table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+}
+
+.table th {
+    background-color: #007BFF;
+    color: #fff;
+    font-weight: bold;
+}
+
+.table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.table tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* メッセージ */
+p {
+    font-size: 14px;
+    color: #555;
+    text-align: center;
+    margin-top: 20px;
+}
+
+.btn {
+    display: inline-block;
+    padding: 6px 16px;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    text-decoration: none;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin: 0 10px;
+    color: white;
+    /* ボタン間のスペース */
+}
+
+.btn-success {
+    background-color: #28a745;
+    color: white;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+    /* ホバー時の色 */
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    /* 赤色 */
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+    /* ホバー時の色 */
+}
+
+.btn_menu {
+    margin: 20px auto;
+    display: flex;
+    justify-content: center;
+}
+
+.register {
+    background-color: #007BFF;
+    color: white;
+}
+
+.btn-secondary {
+    background-color: #ddd;
+    color: #c82333;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    padding: 0;
+    margin: 15px 0;
+    list-style: none;
+    font-size: 12px;
+    /* 文字サイズを小さく */
+}
+
+/* ページネーションの各リンク */
+.pagination .page-item {
+    margin: 0 3px;
+    /* 各リンクの間隔を狭く */
+}
+
+.pagination .page-link {
+    color: #007bff;
+    text-decoration: none;
+    padding: 4px 8px;
+    /* コンパクトなパディング */
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    transition: background-color 0.2s;
+}
+
+/* ホバー時の背景色変更 */
+.pagination .page-link:hover {
+    background-color: #f1f1f1;
+}
+
+/* 現在のページのスタイル */
+.pagination .active .page-link {
+    background-color: #007bff;
+    color: #fff;
+    border-color: #007bff;
+}
+
+.back__button {
+    text-align: center;
+    width: 100px;
+    margin: 40px auto;
+    padding: 5px;
+    height: 35px;
+    border: none;
+    border-radius: 3px;
+    background: #808080;
+    cursor: pointer;
+    font-size: 15px;
+}
+
+
+.back {
+    color: #fff;
+    text-decoration: none;
+}

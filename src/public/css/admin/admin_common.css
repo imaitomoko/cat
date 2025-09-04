@@ -1,0 +1,49 @@
+body {
+    font-family: 'Noto Sans JP', sans-serif;
+    padding-bottom: 100px;
+}
+
+.header {
+    background: #fff;
+}
+
+.header__inner {
+    max-width: 1230px;
+    margin: 0 auto;
+    padding: 20px 50px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.header__logo {
+    color: #0000FF;
+    font-size: 30px;
+    text-decoration: none;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.header-nav__button {
+    color: #696969;
+    border: none;
+    background-color: #fff;
+    cursor: pointer;
+}
+
+.footer {
+    background-color: #fff;
+    /* 背景色 */
+    color: #333;
+    /* 文字色 */
+    text-align: center;
+    /* 中央揃え */
+    padding: 20px;
+    /* 上下の余白 */
+    position: fixed;
+    /* フッターを画面下部に固定 */
+    bottom: 0;
+    /* 画面下部からの位置 */
+    width: 100%;
+    /* 横幅を画面全体に */
+}
