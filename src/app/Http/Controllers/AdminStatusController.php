@@ -366,7 +366,8 @@ class AdminStatusController extends Controller
         $selectedSchoolId = $request->input('school_id', $lesson->school_id); // デフォルトは現在の教
 
          // 同じクラス・同じ年度・選ばれた教室のレッスン（自身を除く）
-        $otherLessons = Lesson::where('year', $lesson->year)
+        $otherLessons = Lesson::with('lessonValues')
+            ->where('year', $lesson->year)
             ->where('class_id', $lesson->class_id)
             ->where('school_id', $selectedSchoolId)
             ->where('id', '!=', $lesson->id)
@@ -375,24 +376,25 @@ class AdminStatusController extends Controller
         // 他の教室一覧（自分の教室以外）
         $otherSchools = School::where('id', '!=', $lesson->school_id)->get();
 
-        $closedDates = LessonValue::where('lesson_value', '休校')
-            ->pluck('date')
-            ->map(function ($date) {
-                return Carbon::parse($date)->format('Y-m-d');
-            })
-            ->toArray();
-
         // 候補日の生成
         $rescheduleCandidates = collect();
+        $today = Carbon::today(); // 今日
+        $availableFrom = $today->copy()->addDay(); // 翌日から
+
         foreach ($otherLessons as $otherLesson) {
             foreach ([$otherLesson->day1, $otherLesson->day2] as $day) {
                 if (!$day) continue;
                 $date = Carbon::parse($startDate);
                 while ($date->lte($endDate)) {
+                    $isHoliday = $otherLesson->lessonValues
+                        ->where('date', $date->format('Y-m-d'))
+                        ->where('lesson_value', '休校')
+                        ->isNotEmpty();
                     if (
+                        $date->gte($availableFrom) &&
+                        !$isHoliday && 
                         $date->isoFormat('ddd') === $day && 
-                        $date->between($startOfYear, $endOfYear) &&
-                        !in_array($date->format('Y-m-d'), $closedDates) // 休校日除外
+                        $date->between($startOfYear, $endOfYear) 
                     ) {
                         $start_time = ($day === $otherLesson->day1) ? $otherLesson->start_time1 : $otherLesson->start_time2;
 

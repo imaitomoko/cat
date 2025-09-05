@@ -215,7 +215,7 @@ class LessonController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'lesson_id' => 'required|unique:lessons,lesson_id',
+            'lesson_id' => 'required|string|max:10|unique:lessons,lesson_id',
             'year' => 'required|integer',
             'school_id' => 'required|exists:schools,id',
             'class_id' => 'required|exists:classes,id',

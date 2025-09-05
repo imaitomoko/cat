@@ -24,7 +24,7 @@ class NoticeController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'post_date' => 'required|date',
+            'post_date' => 'required|date|after_or_equal:today',
             'end_date' => 'required|date|after_or_equal:post_date',
             'news_list' => 'required|string',
         ]);

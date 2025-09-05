@@ -223,7 +223,8 @@ class StatusController extends Controller
         $selectedSchoolId = $request->input('school_id', $lesson->school_id); // デフォルトは現在の教
 
          // 同じクラス・同じ年度・選ばれた教室のレッスン（自身を除く）
-        $otherLessons = Lesson::where('year', $lesson->year)
+        $otherLessons = Lesson::with('lessonValues') // 休校情報も一緒にロード
+            ->where('year', $lesson->year)
             ->where('class_id', $lesson->class_id)
             ->where('school_id', $selectedSchoolId)
             ->where('id', '!=', $lesson->id)
@@ -234,12 +235,27 @@ class StatusController extends Controller
 
         // 候補日の生成
         $rescheduleCandidates = collect();
+        $today = Carbon::today(); // 今日
+        $availableFrom = $today->copy()->addDay(); // 翌日から
+
         foreach ($otherLessons as $otherLesson) {
             foreach ([$otherLesson->day1, $otherLesson->day2] as $day) {
                 if (!$day) continue;
                 $date = Carbon::parse($startDate);
-                while ($date->lte($endDate)) {
-                    if ($date->isoFormat('ddd') === $day && $date->between($startOfYear, $endOfYear)) {
+
+                while ($date->lte($endOfYear) && $date->lte($endDate)) {
+                   // この日が休校かどうかをEloquentで確認
+                    $isHoliday = $otherLesson->lessonValues
+                        ->whereDate('date', $date->toDateString())
+                        ->where('lesson_value', '休校')
+                        ->isNotEmpty();
+
+                    if (
+                        $date->gte($availableFrom) &&
+                        !$isHoliday &&
+                        $date->isoFormat('ddd') === $day && 
+                        $date->between($startOfYear, $endOfYear)
+                    ) {
                         $start_time = ($day === $otherLesson->day1) ? $otherLesson->start_time1 : $otherLesson->start_time2;
                         $startDateTime = $date->copy()->setTimeFromTimeString($start_time);
                         $rescheduleCandidates->push([
