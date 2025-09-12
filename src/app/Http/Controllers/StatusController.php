@@ -245,10 +245,10 @@ class StatusController extends Controller
 
                 while ($date->lte($endOfYear) && $date->lte($endDate)) {
                    // この日が休校かどうかをEloquentで確認
-                    $isHoliday = $otherLesson->lessonValues
+                    $isHoliday = $otherLesson->lessonValues()
                         ->whereDate('date', $date->toDateString())
                         ->where('lesson_value', '休校')
-                        ->isNotEmpty();
+                        ->exists();
 
                     if (
                         $date->gte($availableFrom) &&
