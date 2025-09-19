@@ -45,12 +45,23 @@
     table-layout: fixed;
 }
 
-.calendar th,
+.calendar th {
+    width: 14.28%;
+    border: 2px solid #fff;
+    padding: 10px;
+    background-color: #98FB98;
+    font-weight: bold;
+    font-size: 16px;
+    text-align: center;
+    vertical-align: middle;
+}
+
 .calendar td {
     width: 14.28%;
     border: 2px solid #fff;
     padding: 10px;
     vertical-align: top;
+    text-align: left;
 }
 
 .calendar th {

@@ -47,9 +47,9 @@ body {
 @media screen and (max-width: 600px) {
     .header__inner {
         padding: 10px 20px;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
     }
 
     .header__logo {
