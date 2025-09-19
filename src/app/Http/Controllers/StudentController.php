@@ -32,7 +32,7 @@ class StudentController extends Controller
             'user_id' => 'required|unique:users,user_id',
             'user_name' => 'required|string|max:25',
             'email' => 'nullable|email',
-            'password' => 'required|string|min:2',
+            'password' => 'required|string|min:3',
             'lessons.*.lesson_id' => 'required|string|exists:lessons,lesson_id',
             'lessons.*.start_date' => 'required|date',
             'lessons.*.end_date' => 'nullable|date|after_or_equal:lessons.*.start_date',
@@ -185,7 +185,7 @@ class StudentController extends Controller
             'user_id' => 'required|exists:users,user_id',
             'user_name' => 'required|string|max:25',
             'email' => 'nullable|email',
-            'password' => 'nullable|string|min:6',
+            'password' => 'nullable|string|min:3',
             'lesson_ids' => 'required|array', // 複数のレッスンIDを受け付ける
             'lesson_ids.*' => 'string|exists:lessons,lesson_id',
             'user_lesson_ids' => 'nullable|array', 
