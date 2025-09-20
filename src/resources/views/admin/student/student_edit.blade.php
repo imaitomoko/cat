@@ -20,32 +20,32 @@
     @endif 
 
     <div class="form">
-        <form action="{{ route('admin.student.update', $userLesson->id) }}" method="POST">
+        <form action="{{ route('admin.student.update', $user->id) }}" method="POST">
             @csrf
             @method('PUT')
 
             <div class="form-group">
                 <label for="user_id">生徒ID:</label>
-                <input type="text" id="user_id" name="user_id" class="form-unchangeable" value="{{ old('user_id', $userLesson->user->user_id) }}" readonly>
+                <input type="text" id="user_id" name="user_id" class="form-unchangeable" value="{{ old('user_id', $user->user_id) }}" readonly>
             </div>
 
             <div class="form-group">
                 <label for="user_name">生徒名:</label>
-                <input type="text" id="user_name" name="user_name" class="form-control"   value="{{ old('user_name', $userLesson->user->user_name) }}">
+                <input type="text" id="user_name" name="user_name" class="form-control"   value="{{ old('user_name', $user->user_name) }}">
             </div>
 
             <div class="form-group">
                 <label for="email">メールアドレス:</label>
-                <input type="email" id="email" name="email" class="form-control" value="{{ old('email', $userLesson->user->email) }}">
+                <input type="email" id="email" name="email" class="form-control" value="{{ old('email', $user->email) }}">
             </div>
 
             <div class="form-group">
                 <label for="password">パスワード:</label>
-                <input type="password" id="password" name="password" class="form-control" >
+                <input type="password" id="password" name="password" class="form-control" placeholder="変更する場合は入力してください">
             </div>
 
             <div id="lesson-ids-container">
-                @foreach($userLesson->user->userLessons as $index => $userLessonEntry)
+                @foreach($user->userLessons as $index => $userLessonEntry)
                 <div class="lesson-group">
                     <input type="hidden" name="user_lesson_ids[]" value="{{ $userLessonEntry->id }}">
 
@@ -77,7 +77,7 @@
             <div id="delete-ids-container"></div>
         </form>
         <div class="form-group">
-            <form class="delete" action="{{ route('admin.student.destroyAll', $userLesson->user->id) }}" method="POST" style="display:inline-block;">
+            <form class="delete" action="{{ route('admin.student.destroyAll', $user->id) }}" method="POST" style="display:inline-block;">
                 @csrf
                 @method('DELETE')
                 <button type="submit" class="btn btn-danger btn-sm remove-all-student-info">すべての生徒情報を削除</button>

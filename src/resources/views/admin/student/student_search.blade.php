@@ -50,8 +50,7 @@
             <button type="submit" class="btn btn-primary">検索</button>
         </form>
     </div>
-    @if(isset($userLessons) && $userLessons->isNotEmpty())
-    
+    @if(isset($users) && $users->isNotEmpty())
         <table class="table table-bordered">
             <thead>
                 <tr>
@@ -63,25 +62,35 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach($userLessons as $userLesson)
+                @foreach($users as $user)
                     <tr>
-                        <td>{{ $userLesson->user->user_name }}</td>
-                        <td>{{ $userLesson->lesson->day1 }}</td>
-                        <td>{{ $userLesson->lesson->day2 }}</td>
-                        <td>{{ $userLesson->lesson->lesson_id }}</td>
+                        @php 
+                            $firstUserLesson = $user->userLessons->first();
+                        @endphp
+
+                        <td>{{ $user->user_name }}</td>
+                        @if($firstUserLesson && $firstUserLesson->lesson)
+                            <td>{{ $firstUserLesson->lesson->day1 }}</td>
+                            <td>{{ $firstUserLesson->lesson->day2 }}</td>
+                            <td>{{ $firstUserLesson->lesson->lesson_id }}</td>
+                        @else
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                        @endif
                         <td>
-                            <a href="{{ route('admin.student.edit', $userLesson->id) }}" class="btn btn-success btn-sm">編集</a>
+                            <a href="{{ route('admin.student.edit', $user->id) }}" class="btn btn-success btn-sm">編集</a>
                         </td>
                     </tr>
                 @endforeach
             </tbody>
         </table>
         <div class="pagination">
-            {{ $userLessons->links() }}
+            {{ $users->links() }}
         </div>
     @else
     <p>該当するデータがありません。</p>
-　　 @endif
+    @endif
     <div class="back__button">
         <a class="back" href="{{ url()->previous() }}">back</a>
     </div>

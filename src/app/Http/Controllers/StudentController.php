@@ -103,8 +103,10 @@ class StudentController extends Controller
     {
         $schools = School::all();
         $classes = SchoolClass::all(); // セレクトボックスに表示する教室
-        $years = Lesson::select('year')->distinct()->orderBy('year', 'desc')->pluck('year'); // 年度一覧を取得
-        return view('admin.student.student_search', compact('schools', 'classes', 'years'));
+        $years = Lesson::select('year')->distinct()->orderBy('year', 'desc')->pluck('year');
+        $users = collect();
+
+        return view('admin.student.student_search', compact('schools', 'classes', 'years', 'users'));
     }
 
     public function show(Request $request)
@@ -119,29 +121,28 @@ class StudentController extends Controller
         $schools = School::all();
         $classes = SchoolClass::all();
 
-       // `UserLesson` を取得し、関連モデルを読み込む
-        $query = UserLesson::with(['user', 'lesson', 'lesson.school', 'lesson.schoolClass'])
-            ->whereHas('lesson', function ($query) use ($year, $schoolId, $classId) {
-                if ($year) {
-                    $query->where('year', $year);
-                }
-                if ($schoolId) {
-                    $query->where('school_id', $schoolId);
-                }
-                if ($classId) {
-                    $query->where('class_id', $classId);
-                }
+        $query = User::with(['userLessons.lesson', 'userLessons.lesson.school', 'userLessons.lesson.schoolClass']);
+
+        if ($year || $schoolId || $classId) {
+            $query->where(function($q) use ($year, $schoolId, $classId) {
+                $q->whereHas('userLessons.lesson', function($q2) use ($year, $schoolId, $classId) {
+                    if ($year) $q2->where('year', $year);
+                    if ($schoolId) $q2->where('school_id', $schoolId);
+                    if ($classId) $q2->where('class_id', $classId);
+                })
+                ->orWhereDoesntHave('userLessons'); // レッスンがないユーザーも含める
             });
+        }
 
         // ページネーションを使用してデータを取得
-        $userLessons = $query->paginate(10)->appends([
+        $users = $query->paginate(10)->appends([
             'year' => $request->year,
             'school_id' => $request->school_id,
             'class_id' => $request->class_id,
         ]);
 
         // ビューにデータを渡す
-        return view('admin.student.student_search', compact('userLessons', 'schools', 'classes', 'years'));
+        return view('admin.student.student_search', compact('users', 'schools', 'classes', 'years'));
     }
 
     public function destroyAll($userId)
@@ -165,12 +166,12 @@ class StudentController extends Controller
 
     public function edit($id)
     {
-        $userLesson = UserLesson::with('user','lesson')->findOrFail($id);
+        $user = User::with('userLessons.lesson')->findOrFail($id);
 
         $lessons = Lesson::all();
 
         return view('admin.student.student_edit', [
-            'userLesson' => $userLesson,
+            'user' => $user,
             'lessons' => $lessons,
             'password' => '*****', // マスクされたパスワード
         ]);
@@ -178,15 +179,13 @@ class StudentController extends Controller
 
     public function update(Request $request, $id)
     {
-        $userLesson = UserLesson::with(['lesson', 'user.lessons', 'userLessonStatus'])->findOrFail($id);
-        $user = User::where('user_id', $request->user_id)->firstOrFail();
+        $user = User::with('userLessons.lesson')->findOrFail($id);
 
         $validated = $request->validate([
-            'user_id' => 'required|exists:users,user_id',
             'user_name' => 'required|string|max:25',
             'email' => 'nullable|email',
             'password' => 'nullable|string|min:3',
-            'lesson_ids' => 'required|array', // 複数のレッスンIDを受け付ける
+            'lesson_ids' => 'required|array', 
             'lesson_ids.*' => 'string|exists:lessons,lesson_id',
             'user_lesson_ids' => 'nullable|array', 
             'user_lesson_ids.*' => 'nullable|integer|exists:user_lessons,id',
@@ -232,7 +231,7 @@ class StudentController extends Controller
 
             if ($userLessonId) {
             // 📝 既存の user_lesson を更新
-                $existing = UserLesson::find($userLessonId);
+                $existing = UserLesson::where('id', $userLessonId)->where('user_id', $user->id)->first();
                 if ($existing) {
                     $existing->lesson_id = $lessonId;
                     $existing->start_date = $startDate;
