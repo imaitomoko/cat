@@ -133,12 +133,27 @@ class TeacherClassController extends Controller
             ]);
         }
 
+        $targetTime = null;
+        if ($lesson->day1 === $dayOfWeek) {
+            $targetTime = $lesson->start_time1;
+        } elseif ($lesson->day2 === $dayOfWeek) {
+            $targetTime = $lesson->start_time2;
+        }
+
+        if (!$targetTime) {
+            abort(404, 'この日はレッスンの曜日ではありません。');
+        }
+
         $lessonIds = Lesson::where('school_id', $schoolId)
             ->where('class_id', $classId)
             ->where(function ($query) use ($dayOfWeek) {
                 $query->where('day1', $dayOfWeek)
                         ->orWhere('day2', $dayOfWeek);
                 })
+            ->where(function ($query) use ($targetTime) {
+                $query->where('start_time1', $targetTime)
+                    ->orWhere('start_time2', $targetTime);
+            })
             ->pluck('id');
 
         $regularLessons = UserLesson::whereIn('lesson_id', $lessonIds)
@@ -173,7 +188,13 @@ class TeacherClassController extends Controller
             ->get()
             ->filter(function ($uls) use ($schoolId, $classId) {
                 $res = $uls->reschedule;
-                return $res && $res->lesson->school_id === $schoolId && $res->lesson->class_id === $classId;
+                return $res 
+                && $res->lesson->school_id === $schoolId 
+                && $res->lesson->class_id === $classId
+                && (
+                    ($res->lesson->day1 === $dayOfWeek && $res->lesson->start_time1 === $targetTime) ||
+                    ($res->lesson->day2 === $dayOfWeek && $res->lesson->start_time2 === $targetTime)
+                );
             })
             ->map(function ($uls) use ($searchDate) {
                 $res = $uls->reschedule;
