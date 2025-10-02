@@ -8,7 +8,7 @@
 
 <div class="content">
     <div class="ttl">
-        <h2>{{ $school->school_name }} - {{ $class->class_name }} - {{ $date->format('Y/m/d') }}</h2>
+        <h2>{{ $school->school_name }} - {{ $class->class_name }} - {{ \Carbon\Carbon::parse($searchDate)->format('Y/m/d') }}</h2>
     </div>
     <table>
     <thead>
@@ -39,7 +39,7 @@
                             'id' => $user->id,
                             'school_id' => $school->id,
                             'class_id' => $class->id,
-                            'date' => $date->format('Y-m-d'),
+                            'date' => \Carbon\Carbon::parse($searchDate)->format('Y-m-d'),
                         ]) }}">
                             {{ $user->user_name }}
                         </a>
@@ -67,7 +67,7 @@
                             @elseif ($status === 'show_cancel_absent_button')
                                 <form method="POST" action="{{ route('admin.status.absent', ['userLessonId' => $lessonData['userLesson']->id]) }}">
                                 @csrf
-                                    <input type="hidden" name="date" value="{{ $date->format('Y-m-d') }}">
+                                    <input type="hidden" name="date" value="{{ \Carbon\Carbon::parse($searchDate)->format('Y-m-d') }}">
                                     <input type="hidden" name="status" value="未受講">
                                     <button class="btn btn-secondary">欠席中止</button>
                                 </form>

@@ -35,9 +35,12 @@ class AdminStatusController extends Controller
             'date' => 'required|date',
         ]);
 
+        session(['return_url' => url()->full()]);
+
         $schoolId = $request->input('school_id');
         $classId = $request->input('class_id');
         $date =  Carbon::parse($request->input('date'));
+        $searchDate = $date->format('Y-m-d');
         $now = Carbon::now();
 
         // 学校・クラスの情報を取得
@@ -178,7 +181,7 @@ class AdminStatusController extends Controller
         $mergedUserLessons = $regularLessons->merge($reschedules);
 
 
-        return view('admin.status.admin_class_list', compact('school', 'class', 'date', 'lessons', 'userLessons',  'weekdayJapanese','mergedUserLessons'));
+        return view('admin.status.admin_class_list', compact('school', 'class', 'searchDate', 'lessons', 'userLessons',  'weekdayJapanese','mergedUserLessons'));
     }
 
     public function detail(Request $request, $id)
@@ -193,16 +196,19 @@ class AdminStatusController extends Controller
 
         $schoolId = $request->input('school_id');
         $classId = $request->input('class_id');
-        $date = $request->input('date');
+        $searchDate = $request->input('date');
 
         // 本日を基準に、1ヶ月前〜2ヶ月後を計算
         $now = \Carbon\Carbon::now();
         $rangeStart = $now->copy()->subMonth();
         $rangeEnd = $now->copy()->addMonths(2);
 
-        $student->userLessons = $student->userLessons->filter(function ($userLesson) use ($rangeStart, $rangeEnd) {
+        $student->userLessons = $student->userLessons->filter(function ($userLesson) use ($rangeStart, $rangeEnd, $schoolId, $classId) {
             $lesson = $userLesson->lesson;
             if (!$lesson) return false;
+
+            if ($schoolId && $lesson->school_id != $schoolId) return false;
+            if ($classId && $lesson->class_id != $classId) return false;
 
             // lessonの開始日と終了日を設定
             $lessonYear = $lesson->year;
@@ -250,11 +256,15 @@ class AdminStatusController extends Controller
             $startDate = \Carbon\Carbon::parse($userLesson->start_date ?? "{$lesson->year}-04-01");
             $endDate = \Carbon\Carbon::parse($userLesson->end_date ?? ($lesson->year + 1) . '-03-31');
 
-            $filteredStatuses = $userLesson->userLessonStatus->filter(function ($status) use ($startDate, $endDate, $lesson, $rangeStart, $rangeEnd) {
-                $date = \Carbon\Carbon::parse($status->date);
-                $isClosed = $lesson->lessonValues->contains(fn($lv) => $lv->date === $date->format('Y-m-d') && $lv->lesson_value === '休校');
-                return $date->between($startDate, $endDate) && 
-                        $date->between($rangeStart, $rangeEnd) && 
+            $filteredStatuses = $userLesson->userLessonStatus->filter(function ($status) use ($startDate, $endDate, $lesson, $rangeStart, $rangeEnd, $schoolId, $classId, $searchDate) {
+                if ($schoolId && $lesson->school_id != $schoolId) return false;
+                if ($classId && $lesson->class_id != $classId) return false;
+
+                $statusDate = \Carbon\Carbon::parse($status->date);
+                
+                $isClosed = $lesson->lessonValues->contains(fn($lv) => $lv->date === $statusDate->format('Y-m-d') && $lv->lesson_value === '休校');
+                return $statusDate->between($startDate, $endDate) && 
+                        $statusDate->between($rangeStart, $rangeEnd) && 
                         !$isClosed;
             });
 
@@ -275,7 +285,7 @@ class AdminStatusController extends Controller
             ['path' => request()->url(), 'query' => request()->query()]
         );
 
-        return view('admin.status.admin_status', compact('student', 'paginatedStatuses', 'schoolId', 'classId', 'date'));
+        return view('admin.status.admin_status', compact('student', 'paginatedStatuses', 'schoolId', 'classId', 'searchDate'));
     }
 
     private static function getWeekdayNumber($dayName)
