@@ -41,6 +41,7 @@ class AdminStatusController extends Controller
         $classId = $request->input('class_id');
         $date =  Carbon::parse($request->input('date'));
         $searchDate = $date->format('Y-m-d');
+        $targetYear = $date->month >= 4 ? $date->year : $date->year - 1;
         $now = Carbon::now();
 
         // 学校・クラスの情報を取得
@@ -61,6 +62,7 @@ class AdminStatusController extends Controller
         // lesson_value が「休校」でないレッスンを取得
         $lessons = Lesson::where('school_id', $schoolId)
             ->where('class_id', $classId)
+            ->where('year', $targetYear)
             ->whereHas('lessonValues', function ($query) use ($date) {
                 $query->whereDate('date', $date) // lessonValues の date を基準にする
                         ->where('lesson_value', '!=', '休校');
@@ -69,6 +71,9 @@ class AdminStatusController extends Controller
             ->toArray();
 
         $userLessons = UserLesson::whereIn('lesson_id', $lessons)
+            ->whereHas('lesson', function ($q) use ($targetYear) {
+                $q->where('year', $targetYear); 
+            })
             ->whereHas('userLessonStatus', function ($query) use ($date) {
                 $query->whereDate('date', $date);
             })
@@ -127,6 +132,11 @@ class AdminStatusController extends Controller
             });
 
         $rescheduledStatuses = UserLessonStatus::whereDate('reschedule_to', $date)
+            ->whereHas('reschedule.lesson', function ($q) use ($schoolId, $classId, $targetYear) {
+                $q->where('school_id', $schoolId)
+                    ->where('class_id', $classId)
+                    ->where('year', $targetYear);
+            })
             ->with(['reschedule.lesson','reschedule.user',])
             ->get()
             ->map(function ($status) use ($date, $weekdayJapanese, $now) {
@@ -196,17 +206,21 @@ class AdminStatusController extends Controller
 
         $schoolId = $request->input('school_id');
         $classId = $request->input('class_id');
-        $searchDate = $request->input('date');
+        $searchDate = $request->input('date')?? now()->toDateString();
+        $date = \Carbon\Carbon::parse($searchDate);
+        $targetYear = $date->month >= 4 ? $date->year : $date->year - 1;
+ 
 
         // 本日を基準に、1ヶ月前〜2ヶ月後を計算
         $now = \Carbon\Carbon::now();
         $rangeStart = $now->copy()->subMonth();
         $rangeEnd = $now->copy()->addMonths(2);
 
-        $student->userLessons = $student->userLessons->filter(function ($userLesson) use ($rangeStart, $rangeEnd, $schoolId, $classId) {
+        $student->userLessons = $student->userLessons->filter(function ($userLesson) use ($rangeStart, $rangeEnd, $schoolId, $classId, $targetYear) {
             $lesson = $userLesson->lesson;
             if (!$lesson) return false;
 
+            if ($lesson->year != $targetYear) return false; 
             if ($schoolId && $lesson->school_id != $schoolId) return false;
             if ($classId && $lesson->class_id != $classId) return false;
 
@@ -256,7 +270,7 @@ class AdminStatusController extends Controller
             $startDate = \Carbon\Carbon::parse($userLesson->start_date ?? "{$lesson->year}-04-01");
             $endDate = \Carbon\Carbon::parse($userLesson->end_date ?? ($lesson->year + 1) . '-03-31');
 
-            $filteredStatuses = $userLesson->userLessonStatus->filter(function ($status) use ($startDate, $endDate, $lesson, $rangeStart, $rangeEnd, $schoolId, $classId, $searchDate) {
+            $filteredStatuses = $userLesson->userLessonStatus->filter(function ($status) use ($startDate, $endDate, $lesson, $rangeStart, $rangeEnd, $schoolId, $classId, $searchDate, $targetYear) {
                 if ($schoolId && $lesson->school_id != $schoolId) return false;
                 if ($classId && $lesson->class_id != $classId) return false;
 
