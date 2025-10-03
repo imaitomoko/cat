@@ -186,7 +186,7 @@ class TeacherClassController extends Controller
         $rescheduled = UserLessonStatus::whereDate('reschedule_to', $searchDate)
             ->with(['reschedule.lesson', 'reschedule.user'])
             ->get()
-            ->filter(function ($uls) use ($schoolId, $classId) {
+            ->filter(function ($uls) use ($schoolId, $classId, $dayOfWeek, $targetTime) {
                 $res = $uls->reschedule;
                 return $res 
                 && $res->lesson->school_id === $schoolId 

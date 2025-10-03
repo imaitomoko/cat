@@ -181,7 +181,7 @@ class AdminStatusController extends Controller
         $mergedUserLessons = $regularLessons->merge($reschedules);
 
 
-        return view('admin.status.admin_class_list', compact('school', 'class', 'searchDate', 'lessons', 'userLessons',  'weekdayJapanese','mergedUserLessons'));
+        return view('admin.status.admin_class_list', compact('school', 'class', 'date', 'searchDate', 'lessons', 'userLessons',  'weekdayJapanese','mergedUserLessons'));
     }
 
     public function detail(Request $request, $id)
