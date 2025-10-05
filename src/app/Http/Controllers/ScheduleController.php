@@ -19,6 +19,8 @@ class ScheduleController extends Controller
         $user = Auth::user();
         $today = Carbon::today();
         
+        $currentAcademicYear = $today->month < 4 ? $today->year - 1 : $today->year;
+
         $userLessons = UserLesson::where('user_id', $user->id)->get();
 
         $lessonData = [];
@@ -30,15 +32,13 @@ class ScheduleController extends Controller
 
             $school = School::find($lesson->school_id);
             $class = SchoolClass::find($lesson->class_id);
-
             if (!$school || !$class) continue;
 
             $startDate = $userLesson->start_date ? Carbon::parse($userLesson->start_date) : null;
             $endDate = $userLesson->end_date ? Carbon::parse($userLesson->end_date) : null;
             $cutoffDate = Carbon::createFromDate($lesson->year + 1, 4, 1);
 
-            if ($startDate && $today->lt($startDate)) {
-                  // まだ開始していない場合は除外
+            if ($startDate && $today->lt($startDate) && $lesson->year <= $currentAcademicYear) {
                 continue;
             }
 
