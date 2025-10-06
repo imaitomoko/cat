@@ -41,11 +41,6 @@ class StatusController extends Controller
             $endDate = $userLesson->end_date ? Carbon::parse($userLesson->end_date) : null;
             $cutoffDate = Carbon::createFromDate($lesson->year + 1, 4, 1);
 
-            if ($startDate && $today->lt($startDate)) {
-                  // まだ開始していない場合は除外
-                continue;
-            }
-
             if ($endDate && $today->gt($endDate)) {
                 // 終了している場合は除外
                 continue;
