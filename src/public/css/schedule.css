@@ -34,7 +34,7 @@
     text-align: center;
     margin: 20px auto;
     padding: 10px 0;
-    width: 40%;
+    width: 70%;
     border: blue 1px solid;
     border-radius: 5px;
     background-color: aliceblue;
@@ -54,7 +54,7 @@
 }
 
 .user_text {
-    font-size: 20px;
+    font-size: 18px;
     text-align: center;
     padding: 10px 0;
     margin: 0;
