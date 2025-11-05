@@ -43,9 +43,15 @@ class AdminScheduleController extends Controller
             $selectedYear = (int) $selectedYear;
         }
 
-        $lessons = Lesson::with(['lessonValues' => function ($query) use ($selectedMonth, $selectedYear) {
-            $startDate = Carbon::create($selectedYear, $selectedMonth, 1)->startOfMonth()->toDateString();
-            $endDate = Carbon::create($selectedYear, $selectedMonth, 1)->endOfMonth()->toDateString();
+        $fiscalYearStart = Carbon::create($selectedYear, 4, 1);
+        $fiscalYearEnd = $fiscalYearStart->copy()->addYear()->subDay(); 
+
+        // **選択した月を +1 年進める**
+        $displayYear = ($selectedMonth < 4) ? $selectedYear + 1 : $selectedYear;
+
+        $lessons = Lesson::with(['lessonValues' => function ($query) use ($selectedMonth, $displayYear) {
+            $startDate = Carbon::create($displayYear, $selectedMonth, 1)->startOfMonth()->toDateString();
+            $endDate = Carbon::create($displayYear, $selectedMonth, 1)->endOfMonth()->toDateString();
         
             $query->whereBetween('date', [$startDate, $endDate]);
         }])
@@ -53,13 +59,6 @@ class AdminScheduleController extends Controller
         ->where('class_id', $classId)
         ->where('year', $selectedYear)
         ->get();
-
-        // 年度の開始・終了（例：2024年度 → 2024年4月～2025年3月）
-        $fiscalYearStart = Carbon::create($selectedYear, 4, 1);
-        $fiscalYearEnd = $fiscalYearStart->copy()->addYear()->subDay(); // 翌年3月31日
-
-        // **選択した月を +1 年進める**
-        $displayYear = ($selectedMonth < 4) ? $selectedYear + 1 : $selectedYear;
 
         // 現在選択されている月
         $currentMonth = $selectedMonth;
