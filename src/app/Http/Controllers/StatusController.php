@@ -291,6 +291,7 @@ class StatusController extends Controller
 
     public function makeupUpdate(Request $request, $userLessonId)
     {
+
         $request->validate([
             'date' => 'required|date',
             'lesson_id' => 'required|integer|exists:lessons,id',
@@ -303,6 +304,8 @@ class StatusController extends Controller
         // reschedule_to に振替日だけ保存
         $status->reschedule_to = $request->date;
         $status->save();
+
+        Reschedule::where('user_lesson_status_id', $status->id)->delete();
 
         Reschedule::create([
             'user_lesson_status_id' => $status->id,
