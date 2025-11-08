@@ -106,7 +106,8 @@
                         @php
                             $rescheduleDate = \Carbon\Carbon::parse($status->reschedule_to);
                             $rescheduleWeekday = $rescheduleDate->locale('ja')->isoFormat('ddd');
-                            $rescheduleLesson = $status->reschedule->lesson;
+                            $rescheduleLesson = $status->reschedule->lesson ?? null;
+                            $rescheduleSchool = $rescheduleLesson->school ?? null;
 
                             $rescheduleStartTime = null;
                             if ($rescheduleLesson->day1 === $rescheduleWeekday && $rescheduleLesson->start_time1) {
@@ -114,34 +115,25 @@
                             } elseif ($rescheduleLesson->day2 === $rescheduleWeekday && $rescheduleLesson->start_time2) {
                                 $rescheduleStartTime = \Carbon\Carbon::parse($rescheduleDate->format('Y-m-d') . ' ' . $rescheduleLesson->start_time2);
                             }
-                            $isPast = false;
-
-                            if ($rescheduleStartTime) {
-                                $isPast = $rescheduleStartTime->lt($now);
-                            } else {
-                                       // start_time情報がない場合は日付のみで判定（今日より前の日付は過去とみなす）
-                                $isPast = $rescheduleDate->lt($now->startOfDay());
-                            }
+                            $isPast = $rescheduleStartTime
+                                ? $rescheduleStartTime->lt($now)
+                                : $rescheduleDate->lt($now->startOfDay());
                         @endphp
-                        @if ($isPast)
-                            <span>
-                                <div class="reschedule-wrap">
-                                    <div>振替済み</div>
-                                    <div>
-                                        {{ $rescheduleDate->format('m-d') }} {{ $rescheduleWeekday }} {{ $rescheduleStartTime ? $rescheduleStartTime->format('H:i') : '' }}
-                                    </div>
-                                </div> 
-                            </span>
-                        @else
-                            <span>
-                                <div class="reschedule-wrap">
-                                    <div>振替予定</div>
-                                    <div>
-                                        {{ $rescheduleDate->format('m-d') }} {{ $rescheduleWeekday }} {{ $rescheduleStartTime ? $rescheduleStartTime->format('H:i') : '' }}
-                                    </div>
+                        
+                        <span>
+                            <div class="reschedule-wrap">
+                                <div>
+                                    {{ $isPast ? '振替済み' : '振替予定' }}
+                                    @if ($rescheduleSchool && $rescheduleSchool->id !== $status->userLesson->lesson->school_id)
+                                        （{{ $rescheduleSchool->school_name }}）
+                                    @endif
                                 </div>
-                            </span>
-                                    <!-- 振替キャンセルボタン -->
+                                <div>
+                                    {{ $rescheduleDate->format('m-d') }} {{ $rescheduleWeekday }} {{ $rescheduleStartTime ? $rescheduleStartTime->format('H:i') : '' }}
+                                </div>
+                            </div> 
+                        </span>
+                        @if (!$isPast)
                             <form action="{{ route('reschedule.cancel', ['rescheduleId' => $reschedule->id]) }}" method="POST" onsubmit="return confirm('本当に振替をキャンセルしますか？');">
                             @csrf
                             @method('DELETE')

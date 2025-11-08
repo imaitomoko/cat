@@ -33,7 +33,7 @@ class Reschedule extends Model
 
     public function userLessonStatus()
     {
-        return $this->belongsTo(UserLessonStatus::class);
+        return $this->belongsTo(UserLessonStatus::class, 'user_lesson_status_id');
     }
 
     public function userLesson()

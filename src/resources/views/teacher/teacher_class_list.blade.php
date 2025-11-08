@@ -42,8 +42,14 @@
                     <td>
                         @if ($student['is_makeup'] && $student['original_date'])
                             makeup（{{ \Carbon\Carbon::parse($student['original_date'])->format('Y-m-d') }}）
+                            @if (!empty($student['reschedule_school_name']))
+                                （{{ $student['reschedule_school_name'] }}）
+                            @endif
                         @elseif (!empty($student['reschedule_to']))
                             {{ \Carbon\Carbon::parse($student['reschedule_to'])->format('Y-m-d') }}
+                            @if (!empty($student['reschedule_school_name']))
+                                （{{ $student['reschedule_school_name'] }}）
+                            @endif
                         @endif
                     </td>
                 </tr>

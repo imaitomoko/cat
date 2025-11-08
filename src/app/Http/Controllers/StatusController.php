@@ -208,7 +208,7 @@ class StatusController extends Controller
         $userLesson = UserLesson::with(['lesson.schoolClass', 'lesson.school'])->findOrFail($userLessonId);
         $lesson = $userLesson->lesson;
         $user = $userLesson->user;
-
+       
         $startOfYear = Carbon::createFromDate($lesson->year, 4, 1);
         $endOfYear = $startOfYear->copy()->addYear()->subDay();
     
@@ -216,6 +216,7 @@ class StatusController extends Controller
         $endDate = $absenceDate->copy()->addWeeks(4)->subDay();
 
         $selectedSchoolId = $request->input('school_id', $lesson->school_id); // デフォルトは現在の教
+        $selectedSchool = School::find($selectedSchoolId);
 
          // 同じクラス・同じ年度・選ばれた教室のレッスン（自身を除く）
         $otherLessons = Lesson::with('lessonValues') // 休校情報も一緒にロード
@@ -286,6 +287,7 @@ class StatusController extends Controller
             'otherSchools' => $otherSchools,
             'selectedSchoolId' => $selectedSchoolId, // 選択状態保持用
             'statusId' => $statusId,
+            'selectedSchool' => $selectedSchool,
         ]);
     }
 

@@ -15,7 +15,6 @@
 
     <div class="school">
         <form method="GET" action="{{ route('status.makeup', ['userLessonId' => $userLesson->id]) }}">
-            
             <input type="hidden" name="status_id" value="{{ $statusId }}">
             <input type="hidden" name="date" value="{{ request('date') }}">
             <label for="school">その他の教室はこちらから:</label>

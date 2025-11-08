@@ -157,7 +157,11 @@ class TeacherClassController extends Controller
             ->pluck('id');
 
         $regularLessons = UserLesson::whereIn('lesson_id', $lessonIds)
-            ->with(['user', 'userLessonStatus' => fn($q) => $q->whereDate('date', $searchDate)])
+            ->with([
+                'user', 
+                'userLessonStatus' => fn($q) => $q->whereDate('date', $searchDate),
+                'userLessonStatus.reschedule.lesson.school',
+            ])
             ->get()
             ->filter(function ($ul) use ($searchDate) {
                 $start = $ul->start_date ? Carbon::parse($ul->start_date) : null;
@@ -170,6 +174,8 @@ class TeacherClassController extends Controller
                 $isManual = $status?->is_manual_absence ?? false;
                 $statVal = $status?->status;
 
+                $rescheduleSchoolName = $status?->reschedule?->lesson?->school?->en_school_name;
+
                 return [
                     'user_lesson_status_id' => $status?->id,
                     'name' => $ul->user->user_name ?? '不明',
@@ -180,21 +186,23 @@ class TeacherClassController extends Controller
                     'show_button' => $statVal === '未受講',
                     'original_date' => null,
                     'reschedule_to' => $status?->reschedule_to,
+                    'reschedule_school_name' => $rescheduleSchoolName,
                 ];
             });
 
         $rescheduled = UserLessonStatus::whereDate('reschedule_to', $searchDate)
-            ->with(['reschedule.lesson', 'reschedule.user'])
+            ->with(['reschedule.lesson.school', 'reschedule.user'])
             ->get()
             ->filter(function ($uls) use ($schoolId, $classId, $dayOfWeek, $targetTime) {
                 $res = $uls->reschedule;
-                return $res 
-                && $res->lesson->school_id === $schoolId 
-                && $res->lesson->class_id === $classId
-                && (
-                    ($res->lesson->day1 === $dayOfWeek && $res->lesson->start_time1 === $targetTime) ||
-                    ($res->lesson->day2 === $dayOfWeek && $res->lesson->start_time2 === $targetTime)
-                );
+                return $res
+                    && $res->lesson 
+                    && $res->lesson->school_id === $schoolId 
+                    && $res->lesson->class_id === $classId
+                    && (
+                        ($res->lesson->day1 === $dayOfWeek && $res->lesson->start_time1 === $targetTime) ||
+                        ($res->lesson->day2 === $dayOfWeek && $res->lesson->start_time2 === $targetTime)
+                    );
             })
             ->map(function ($uls) use ($searchDate) {
                 $res = $uls->reschedule;
@@ -208,6 +216,7 @@ class TeacherClassController extends Controller
                     'is_truency_active' => $status === '無連絡欠席',
                     'show_button' => $status === '未受講',
                     'original_date' => $uls->date,
+                    'reschedule_school_name' => $res->lesson?->school?->en_school_name, 
                 ];
             });
 
