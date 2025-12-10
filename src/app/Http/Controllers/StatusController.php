@@ -130,17 +130,26 @@ class StatusController extends Controller
             'lesson.school',
             'lesson.schoolClass',
             'userLessonStatus.reschedule.lesson',
+            'lesson.lessonValues',
         ])->findOrFail($user_lesson_id);
 
         $user = $userLesson->user;
-        $lesson = $userLesson->lesson;
+        //$lesson = $userLesson->lesson;
 
         $start = Carbon::now()->subMonth();
         $end = Carbon::now()->addMonth();
 
+        $holidayDates = $userLesson->lesson->lessonValues
+            ->where('lesson_value', '休校')
+            ->pluck('date')
+            ->toArray();
+
         $statuses = $userLesson->userLessonStatus
-            ->filter(function ($status) use ($start, $end) {
-                return Carbon::parse($status->date)->between($start, $end);
+            ->filter(function ($status) use ($start, $end, $holidayDates) {
+                $date = \Carbon\Carbon::parse($status->date);
+
+                return $date->between($start, $end)
+                && !in_array($status->date, $holidayDates);
             });
 
 
@@ -199,7 +208,6 @@ class StatusController extends Controller
             'user_lesson_id' => $reschedule->originalLessonStatus->user_lesson_id
         ])->with('success', '振替をキャンセルしました');
     }
-
 
     public function makeupShow($userLessonId, Request $request)
     {

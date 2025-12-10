@@ -31,18 +31,10 @@
             </tr>
         </thead>
     
-        @php
-            $now = \Carbon\Carbon::now();
-            $startDate = \Carbon\Carbon::now()->subMonth();
-            $endDate = \Carbon\Carbon::now()->addMonth();
-            $filteredStatuses = $userLesson->userLessonStatus->filter(function ($status) use ($startDate, $endDate) {
-                    return \Carbon\Carbon::parse($status->date)->between($startDate, $endDate);
-                });
-        @endphp
-
         <tbody>
-        @foreach ($filteredStatuses as $status)
+        @foreach ($statuses as $status)
             @php
+                $now = \Carbon\Carbon::now();
                 $weekdayJapanese = \Carbon\Carbon::parse($status->date)->locale('ja')->isoFormat('ddd');
                 $lesson = $userLesson->lesson;
                 $dateString = \Carbon\Carbon::parse($status->date)->format('Y-m-d');
