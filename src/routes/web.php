@@ -35,7 +35,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/update-email', [MailRegisterController::class, 'updateEmail']);
     Route::get('/schedule', [ScheduleController::class, 'index'])->name('schedule');
     Route::get('/schedule/list', [ScheduleController::class, 'show'])->name('schedule.list');
-    Route::get('/schedule/search', [ScheduleController::class, 'search'])->name('schedule.search');
     Route::get('/status', [StatusController::class, 'index'])->name('status');
     Route::get('status/list/{user_lesson_id}', [StatusController::class, 'show'])->name('status.list');
     Route::post('/status/absence/confirm/{userLessonId}', [StatusController::class, 'confirmAbsence'])->name('status.absence.confirm');

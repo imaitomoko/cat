@@ -27,8 +27,6 @@
         <a class="user_inner" href="{{ route('schedule.list', [
             'school_id' => $data['school']->id,
             'class_id' => $data['class']->id,
-            'year' => $data['lesson']->year,
-            'month' => $initialMonth
         ]) }}">
             <p class="user_text">{{ $data['lesson']->year }}年</p>
             <div class="school_class_group">

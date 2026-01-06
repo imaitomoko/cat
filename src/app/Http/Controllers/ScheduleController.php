@@ -62,33 +62,36 @@ class ScheduleController extends Controller
         return view('schedule', compact('user', 'lessonData'));
     }
 
-
     public function show(Request $request)
     {
-        $schoolId = $request->input('school_id');
-        $classId = $request->input('class_id');
-        $currentMonth = $request->input('month', Carbon::now()->month); // デフォルトは現在の月
-        $currentYear = $request->input('year', Carbon::now()->year);   // デフォルトは現在の年
-        $academicStartMonth = 4;
+        $isInitial = !$request->filled('year') && !$request->filled('month');
 
-        // 現在の月と年から、年度の計算
-        if ($currentMonth < $academicStartMonth) {
-           $academicYear = $currentYear - 1; // 1〜3月は前年
+        if ($isInitial) {
+            $startOfMonth = Carbon::now()->startOfMonth();
+            $currentYear  = $startOfMonth->year;
+            $currentMonth = $startOfMonth->month;
         } else {
-            $academicYear = $currentYear;
+            $currentYear  = (int) $request->input('year');
+            $currentMonth = (int) $request->input('month');
+            $startOfMonth = Carbon::create($currentYear, $currentMonth, 1)->startOfMonth();
         }
 
-        // 表示の許可範囲（例：2025年度なら 2025年4月〜2026年3月）
+        $schoolId = $request->input('school_id');
+        $classId = $request->input('class_id');
+        $academicStartMonth = 4;
+
+        $academicYear = $currentMonth < $academicStartMonth
+            ? $currentYear - 1
+            : $currentYear;
+
         $minDate = Carbon::create($academicYear, 4, 1)->startOfMonth();
         $maxDate = Carbon::create($academicYear + 1, 3, 1)->endOfMonth();
 
         // `school_id` と `class_id` からデータを取得
         $school = School::findOrFail($schoolId);
         $class = SchoolClass::findOrFail($classId);
-    
-        // 指定月の開始日と終了日
+
         $now = Carbon::now();
-        $startOfMonth = Carbon::create($currentYear, $currentMonth, 1)->startOfMonth();
         $endOfMonth = $startOfMonth->copy()->endOfMonth();
 
         $canShowPrevious = $startOfMonth->gt($now->copy()->subMonth()->startOfMonth());
@@ -114,7 +117,6 @@ class ScheduleController extends Controller
         $daysInMonth = [];
         for ($date = $startOfMonth->copy(); $date <= $endOfMonth; $date->addDay()) {
             $dayName = $date->isoFormat('ddd'); // 日本語の曜日 (例: "月")
-
             $lessonsForDay = $lessons->map(function ($lesson) use ($date, $dayName) {
             // `lesson_values` テーブルから該当するデータを取得
                 $lessonValue = $lesson->lessonValues->firstWhere('date', $date->toDateString());

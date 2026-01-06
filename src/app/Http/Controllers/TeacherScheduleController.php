@@ -26,8 +26,8 @@ class TeacherScheduleController extends Controller
     {
         $schoolId = $request->input('school_id');
         $classId = $request->input('class_id');
-        $currentMonth = $request->input('month', Carbon::now()->month); // デフォルトは現在の月
-        $currentYear = $request->input('year', Carbon::now()->year);   // デフォルトは現在の年
+        $currentMonth = $request->input('month', Carbon::now()->month); 
+        $currentYear = $request->input('year', Carbon::now()->year);   
         $academicStartMonth = 4;
 
         if ($currentMonth < $academicStartMonth) {
@@ -109,7 +109,7 @@ class TeacherScheduleController extends Controller
             'canGoNext',
             'comment'
         ));
-}
+    }
 
     private function generateCalendar($startOfMonth, $endOfMonth, $lessons)
     {
