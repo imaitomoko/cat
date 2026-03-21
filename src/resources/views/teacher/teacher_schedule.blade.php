@@ -13,6 +13,16 @@
         <form action="{{ route('teacher.search.result') }}" method="POST">
         @csrf
             <div class="form-group">
+                <label for="academic_year">Year</label>
+                <select name="academic_year" id="academic_year" required>
+                    @for ($y = now()->year - 2; $y <= now()->year + 1; $y++)
+                    <option value="{{ $y }}" {{ $y == $academicYear ? 'selected' : '' }}>
+                        {{ $y }}
+                    </option>
+                    @endfor
+                </select>
+            </div>
+            <div class="form-group">
                 <label for="school_id">School Name</label>
                 <select name="school_id" id="school_id" required>
                     <option value="">Choose school</option>

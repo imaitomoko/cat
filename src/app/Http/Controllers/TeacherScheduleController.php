@@ -15,26 +15,20 @@ class TeacherScheduleController extends Controller
 {
     public function showForm()
     {
-        // 学校とクラスを取得
         $schools = School::all();
         $schoolClasses = SchoolClass::all();
+        $academicYear = now()->month >= 4 ? now()->year : now()->year - 1;
 
-        return view('teacher.teacher_schedule', compact('schools', 'schoolClasses'));
+        return view('teacher.teacher_schedule', compact('schools', 'schoolClasses', 'academicYear'));
     }
 
     public function result(Request $request)
     {
         $schoolId = $request->input('school_id');
         $classId = $request->input('class_id');
-        $currentMonth = $request->input('month', Carbon::now()->month); 
-        $currentYear = $request->input('year', Carbon::now()->year);   
-        $academicStartMonth = 4;
-
-        if ($currentMonth < $academicStartMonth) {
-           $academicYear = $currentYear - 1; // 1〜3月は前年
-        } else {
-            $academicYear = $currentYear;
-        }
+        $academicYear = $request->input('academic_year');
+        $currentMonth = $request->input('month', 4); // 初期は4月スタート
+        $currentYear = $request->input('year', $academicYear);
 
         $minDate = Carbon::create($academicYear, 4, 1)->startOfMonth();
         $maxDate = Carbon::create($academicYear + 1, 3, 1)->endOfMonth();
@@ -93,7 +87,7 @@ class TeacherScheduleController extends Controller
 
         $comment = Comment::where('school_id', $schoolId)
             ->where('class_id', $classId)
-            ->where('year', $currentYear)
+            ->where('year', $academicYear)
             ->where('month', $currentMonth)
             ->first();
 
