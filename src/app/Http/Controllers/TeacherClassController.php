@@ -35,8 +35,10 @@ class TeacherClassController extends Controller
 
         $lessons = [];
         if ($selectedSchool) {
-            $today = now();
-            $year = $today->month >= 4 ? $today->year : $today->year - 1;
+
+            $year = $currentDate->month >= 4 
+                ? $currentDate->year 
+                : $currentDate->year - 1;
 
             $lessons = Lesson::with('schoolClass') // 関連するSchoolClassをロード
                 ->where('school_id', $schoolId)
