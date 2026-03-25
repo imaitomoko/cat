@@ -64,17 +64,28 @@ class ScheduleController extends Controller
 
     public function show(Request $request)
     {
-        $isInitial = !$request->filled('year') && !$request->filled('month');
+        $academicYear = $request->input('academic_year');
+        $today = Carbon::today();
 
-        if ($isInitial) {
-            $startOfMonth = Carbon::now()->startOfMonth();
-            $currentYear  = $startOfMonth->year;
-            $currentMonth = $startOfMonth->month;
-        } else {
+        if ($request->filled('year') && $request->filled('month')) {
             $currentYear  = (int) $request->input('year');
             $currentMonth = (int) $request->input('month');
-            $startOfMonth = Carbon::create($currentYear, $currentMonth, 1)->startOfMonth();
+        } else {
+            $start = Carbon::create($academicYear, 4, 1);
+            $end   = Carbon::create($academicYear + 1, 3, 31);
+
+            if ($today->between($start, $end)) {
+             // 👉 年度内なら「今月」
+                $currentYear  = $today->year;
+                $currentMonth = $today->month;
+            } else {
+             // 👉 年度外なら「4月」
+                $currentYear  = $academicYear;
+                $currentMonth = 4;
+            }
         }
+
+        $startOfMonth = Carbon::create($currentYear, $currentMonth, 1);
 
         $schoolId = $request->input('school_id');
         $classId = $request->input('class_id');

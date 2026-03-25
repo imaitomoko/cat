@@ -17,24 +17,21 @@
         $currentAcademicYear = $today->month < 4 ? $today->year - 1 : $today->year;
     @endphp
     @foreach($lessonData as $data)
-    @php
-        $initialMonth = $data['lesson']->year === $currentAcademicYear
-                        ? $today->month   
-                        : 4;              
-    @endphp
-
-    <div class="user">
-        <a class="user_inner" href="{{ route('schedule.list', [
-            'school_id' => $data['school']->id,
-            'class_id' => $data['class']->id,
-        ]) }}">
-            <p class="user_text">{{ $data['lesson']->year }}年</p>
-            <div class="school_class_group">
-                <p class="user_text">{{ $data['school']->school_name }}</p>
-                <p class="user_text">{{ $data['class']->class_name }}</p>
+        @if($data['lesson']->year >= $currentAcademicYear)
+            <div class="user">
+                <a class="user_inner" href="{{ route('schedule.list', [
+                    'school_id' => $data['school']->id,
+                    'class_id' => $data['class']->id,
+                    'academic_year' => $data['lesson']->year,
+                ]) }}">
+                    <p class="user_text">{{ $data['lesson']->year }}年</p>
+                    <div class="school_class_group">
+                        <p class="user_text">{{ $data['school']->school_name }}</p>
+                        <p class="user_text">{{ $data['class']->class_name }}</p>
+                    </div>
+                </a>
             </div>
-        </a>
-    </div>
+        @endif
     @endforeach
     <div class="back__button">
         <a class="back" href="{{ route('index') }}">back</a>
