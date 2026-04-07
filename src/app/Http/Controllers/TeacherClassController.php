@@ -117,6 +117,12 @@ class TeacherClassController extends Controller
         if (!$lesson->school_id || !$lesson->class_id) {
             abort(404, 'レッスンに学校またはクラスの情報が設定されていません');
         }
+
+        $today = Carbon::now();
+
+$currentAcademicYear = $today->month >= 4
+    ? $today->year
+    : $today->year - 1;
         
         $searchDate = Carbon::parse($request->input('date') ?? now()->format('Y-m-d'));
         $schoolId = $lesson->school_id;
@@ -159,6 +165,9 @@ class TeacherClassController extends Controller
             ->pluck('id');
 
         $regularLessons = UserLesson::whereIn('lesson_id', $lessonIds)
+            ->whereHas('lesson', function ($q) use ($currentAcademicYear) {
+                $q->where('year', $currentAcademicYear);
+            })
             ->with([
                 'user', 
                 'userLessonStatus' => fn($q) => $q->whereDate('date', $searchDate),
@@ -193,6 +202,9 @@ class TeacherClassController extends Controller
             });
 
         $rescheduled = UserLessonStatus::whereDate('reschedule_to', $searchDate)
+            ->whereHas('reschedule.lesson', function ($q) use ($currentAcademicYear) {
+                $q->where('year', $currentAcademicYear);
+            })
             ->with(['reschedule.lesson.school', 'reschedule.user'])
             ->get()
             ->filter(function ($uls) use ($schoolId, $classId, $dayOfWeek, $targetTime) {
