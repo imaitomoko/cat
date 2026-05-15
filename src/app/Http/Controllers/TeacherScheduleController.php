@@ -27,8 +27,28 @@ class TeacherScheduleController extends Controller
         $schoolId = $request->input('school_id');
         $classId = $request->input('class_id');
         $academicYear = $request->input('academic_year');
-        $currentMonth = $request->input('month', 4); // 初期は4月スタート
-        $currentYear = $request->input('year', $academicYear);
+        $now = Carbon::now();
+
+        // 現在の年度を判定（4月始まり）
+        if ($now->month <= 3) {
+            $currentAcademicYear = $now->year - 1;
+        } else {
+            $currentAcademicYear = $now->year;
+        }
+
+        // 現在年度なら今月、次年度なら4月
+        $defaultMonth = ($academicYear == $currentAcademicYear)
+            ? $now->month
+            : 4;
+
+        $currentMonth = $request->input('month', $defaultMonth);
+
+        // monthに応じてyearを自動補正
+        $defaultYear = ($currentMonth >= 4)
+            ? $academicYear
+            : $academicYear + 1;
+
+        $currentYear = $request->input('year', $defaultYear);
 
         $minDate = Carbon::create($academicYear, 4, 1)->startOfMonth();
         $maxDate = Carbon::create($academicYear + 1, 3, 1)->endOfMonth();
@@ -38,7 +58,6 @@ class TeacherScheduleController extends Controller
         $class = SchoolClass::findOrFail($classId);
 
         // 指定月の開始日と終了日
-        $now = Carbon::now();
         $startOfMonth = Carbon::create($currentYear, $currentMonth, 1)->startOfMonth();
         $endOfMonth = $startOfMonth->copy()->endOfMonth();
 
@@ -94,7 +113,8 @@ class TeacherScheduleController extends Controller
         return view('teacher.teacher_schedule_list', compact(
             'school',
             'class',
-            'daysInMonth', 
+            'daysInMonth',
+            'academicYear', 
             'previousMonth', 
             'nextMonth', 
             'startOfMonth', 

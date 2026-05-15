@@ -12,6 +12,7 @@
         <form method="GET" action="{{ route('teacher.month.list') }}" style="display:inline;">
             <input type="hidden" name="school_id" value="{{ $school->id }}">
             <input type="hidden" name="class_id" value="{{ $class->id }}">
+            <input type="hidden" name="academic_year" value="{{ $academicYear }}">
             <input type="hidden" name="year" value="{{ $previousMonth?->year }}">
             <input type="hidden" name="month" value="{{ $previousMonth?->month }}">
             <button class="month_change" type="submit" {{ $canGoPrev ? '' : 'disabled' }}>
@@ -26,6 +27,7 @@
         <form method="GET" action="{{ route('teacher.month.list') }}" style="display:inline;">
             <input type="hidden" name="school_id" value="{{ $school->id }}">
             <input type="hidden" name="class_id" value="{{ $class->id }}">
+            <input type="hidden" name="academic_year" value="{{ $academicYear }}">
             <input type="hidden" name="year" value="{{ $nextMonth?->year }}">
             <input type="hidden" name="month" value="{{ $nextMonth?->month }}">
             <button class="month_change" type="submit" {{ $canGoNext ? '' : 'disabled' }}>
