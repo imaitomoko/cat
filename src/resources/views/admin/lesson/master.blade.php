@@ -7,7 +7,7 @@
 @section('content')
 <div class="content">
     <div class="heading">
-        <h2>マスター登録</h2>
+        <h2>教室名・クラス名登録</h2>
     </div>
     
     @if(session('success'))

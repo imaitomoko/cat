@@ -52,7 +52,10 @@
     </div>
     <div class="menu">
         <div class="master-menu__button">
-            <a class="master-menu__item" href="{{ route('admin.master.index') }}">マスター登録</a>
+            <a class="master-menu__item" href="{{ route('admin.master.index') }}">教室名・クラス名登録</a>
+        </div>
+        <div class="master-menu__button">
+            <a class="master-menu__item" href="{{ route('admin.report.register') }}">レポート関連登録</a>
         </div>
     </div>
     <div class="back__button">

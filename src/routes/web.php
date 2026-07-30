@@ -17,6 +17,7 @@ use App\Http\Controllers\StudentController;
 use App\Http\Controllers\AdminScheduleController;
 use App\Http\Controllers\MailController;
 use App\Http\Controllers\AdminStatusController;
+use App\Http\Controllers\SubjectController;
 
 
 /*
@@ -137,6 +138,16 @@ Route::middleware(['auth:admin'])->group(function () {
         Route::post('/mails/send', [MailController::class, 'result'])->name('mails.send');
         Route::post('/mails/confirm', [MailController::class, 'confirm'])->name('mails.confirm');
         Route::post('/mails/store', [MailController::class, 'store'])->name('mails.store');
+
+    });
+
+    Route::prefix('admin')->name('admin.')->group(function () {
+        Route::get('/report/register', [SubjectController::class, 'show'])->name('report.register');
+        Route::get('/report/subject', [SubjectController::class, 'index'])->name('report.subject');
+        Route::post('/report/subject/store', [SubjectController::class, 'storeSubject'])->name('report.subject.store');
+        Route::delete('/report/subject/delete', [SubjectController::class, 'destroySubject'])->name('report.subject.delete');
+        Route::post('/report/category/store', [SubjectController::class, 'storeCategory'])->name('report.category.store');
+        Route::delete('/report/category/delete', [SubjectController::class, 'destroyCategory'])->name('report.category.delete');
 
     });
 
