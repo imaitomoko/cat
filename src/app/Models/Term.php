@@ -11,7 +11,6 @@ class Term extends Model
 
     protected $fillable = [
         'term_number',
-        'year',
         'start_date',
         'end_date',
     ];

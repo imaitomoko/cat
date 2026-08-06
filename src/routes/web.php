@@ -18,6 +18,7 @@ use App\Http\Controllers\AdminScheduleController;
 use App\Http\Controllers\MailController;
 use App\Http\Controllers\AdminStatusController;
 use App\Http\Controllers\SubjectController;
+use App\Http\Controllers\TermController;
 
 
 /*
@@ -145,11 +146,19 @@ Route::middleware(['auth:admin'])->group(function () {
         Route::get('/report/register', [SubjectController::class, 'show'])->name('report.register');
         Route::get('/report/subject', [SubjectController::class, 'index'])->name('report.subject');
         Route::post('/report/subject/store', [SubjectController::class, 'storeSubject'])->name('report.subject.store');
-        Route::delete('/report/subject/delete', [SubjectController::class, 'destroySubject'])->name('report.subject.delete');
+        Route::delete('/report/subject/delete/{id}', [SubjectController::class, 'destroySubject'])->name('report.subject.delete');
         Route::post('/report/category/store', [SubjectController::class, 'storeCategory'])->name('report.category.store');
-        Route::delete('/report/category/delete', [SubjectController::class, 'destroyCategory'])->name('report.category.delete');
-
+        Route::delete('/report/category/delete/{id}', [SubjectController::class, 'destroyCategory'])->name('report.category.delete');
     });
+
+    Route::prefix('admin')->name('admin.')->group(function () {
+        Route::get('/report/term', [TermController::class, 'index'])->name('report.term');
+        Route::post('/report/term/store', [TermController::class, 'store'])->name('report.term.store');
+        Route::delete('/report/term/delete/{id}', [TermController::class, 'destroy'])->name('report.term.delete');
+        
+    });
+
+
 
 
 });

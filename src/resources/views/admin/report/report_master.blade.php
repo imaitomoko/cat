@@ -17,7 +17,7 @@
             <a class="master-menu__item" href="{{ route('admin.report.subject') }}">教科名・項目名登録</a>
         </div>
         <div class="master-menu__button">
-            <a class="master-menu__item" href="">学期名登録</a>
+            <a class="master-menu__item" href="{{ route('admin.report.term') }}">学期名登録</a>
         </div>
         <div class="master-menu__button">
             <a class="master-menu__item" href="">評定登録</a>
