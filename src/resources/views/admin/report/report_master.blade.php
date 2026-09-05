@@ -20,10 +20,10 @@
             <a class="master-menu__item" href="{{ route('admin.report.term') }}">学期名登録</a>
         </div>
         <div class="master-menu__button">
-            <a class="master-menu__item" href="">評定登録</a>
+            <a class="master-menu__item" href="{{ route('admin.report.grade') }}">評定名登録</a>
         </div>
         <div class="master-menu__button">
-            <a class="master-menu__item" href="">コメント登録</a>
+            <a class="master-menu__item" href="{{ route('admin.report.comment') }}">既定コメント登録</a>
         </div>
     </div>
     <div class="back__button">

@@ -19,7 +19,8 @@ use App\Http\Controllers\MailController;
 use App\Http\Controllers\AdminStatusController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\TermController;
-
+use App\Http\Controllers\GradeController;
+use App\Http\Controllers\TeacherCommentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -155,7 +156,18 @@ Route::middleware(['auth:admin'])->group(function () {
         Route::get('/report/term', [TermController::class, 'index'])->name('report.term');
         Route::post('/report/term/store', [TermController::class, 'store'])->name('report.term.store');
         Route::delete('/report/term/delete/{id}', [TermController::class, 'destroy'])->name('report.term.delete');
-        
+    });
+
+    Route::prefix('admin')->name('admin.')->group(function () {
+        Route::get('/report/grade', [GradeController::class, 'index'])->name('report.grade');
+        Route::post('/report/grade/store', [GradeController::class, 'store'])->name('report.grade.store');
+        Route::delete('/report/grade/delete/{id}', [GradeController::class, 'destroy'])->name('report.grade.delete');
+    });
+
+    Route::prefix('admin')->name('admin.')->group(function () {
+        Route::get('/report/comment', [TeacherCommentController::class, 'index'])->name('report.comment');
+        Route::post('/report/comment/store', [TeacherCommentController::class, 'store'])->name('report.comment.store');
+        Route::delete('/report/comment/delete/{id}', [TeacherCommentController::class, 'destroy'])->name('report.comment.delete');
     });
 
 
