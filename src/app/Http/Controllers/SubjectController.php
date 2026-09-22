@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Subject;
 use App\Models\Category;
+use App\Models\ClassSubject;
+use App\Models\SchoolClass;
 
 class SubjectController extends Controller
 {
@@ -70,6 +72,39 @@ class SubjectController extends Controller
         $category->delete();
 
         return redirect()->route('admin.report.subject')->with('success', '項目を削除しました。');
+    }
+
+    public function classSubject()
+    {
+        $classes = SchoolClass::orderBy('id')->get();
+        $subjects = Subject::orderBy('id')->get();
+
+        return view('admin.report.report_class_subject', compact(
+            'classes',
+            'subjects'
+        ));
+    }
+
+    public function storeClassSubject(Request $request)
+    {
+        $validated = $request->validate([
+            'class_id' => 'required|exists:classes,id',
+            'subject_ids' => 'nullable|array',
+            'subject_ids.*' => 'exists:subjects,id',
+        ]);
+
+        ClassSubject::where('class_id', $validated['class_id'])->delete();
+
+        foreach ($validated['subject_ids'] ?? [] as $subjectId) {
+            ClassSubject::create([
+                'class_id' => $validated['class_id'],
+                'subject_id' => $subjectId,
+            ]);
+        }
+
+        return redirect()
+            ->back()
+            ->with('success', 'クラスの教科を登録しました。');
     }
 
 

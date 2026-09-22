@@ -21,6 +21,7 @@ use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\TermController;
 use App\Http\Controllers\GradeController;
 use App\Http\Controllers\TeacherCommentController;
+use App\Http\Controllers\ReportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -150,6 +151,12 @@ Route::middleware(['auth:admin'])->group(function () {
         Route::delete('/report/subject/delete/{id}', [SubjectController::class, 'destroySubject'])->name('report.subject.delete');
         Route::post('/report/category/store', [SubjectController::class, 'storeCategory'])->name('report.category.store');
         Route::delete('/report/category/delete/{id}', [SubjectController::class, 'destroyCategory'])->name('report.category.delete');
+
+        Route::get('/report/class-subject', [SubjectController::class,
+        'classSubject'])->name('report.class.subject');
+        Route::post('/report/class-subject', [SubjectController::class,
+        'storeClassSubject'])->name('report.class.subject.store');
+
     });
 
     Route::prefix('admin')->name('admin.')->group(function () {
@@ -168,6 +175,15 @@ Route::middleware(['auth:admin'])->group(function () {
         Route::get('/report/comment', [TeacherCommentController::class, 'index'])->name('report.comment');
         Route::post('/report/comment/store', [TeacherCommentController::class, 'store'])->name('report.comment.store');
         Route::delete('/report/comment/delete/{id}', [TeacherCommentController::class, 'destroy'])->name('report.comment.delete');
+    });
+
+    Route::prefix('admin')->name('admin.')->group(function () {
+        Route::get('/report/search', [ReportController::class, 'search'])->name('report.search');
+        Route::get('/report/class', [ReportController::class, 'classSearch'])->name('report.class');
+        Route::get('/report/{userLesson}/{term_id}', [ReportController::class, 'index'])->name('report');
+        Route::post('/report/{userLesson}/{term_id}', [ReportController::class, 'store'])->name('report.store');
+
+
     });
 
 

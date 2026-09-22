@@ -14,9 +14,20 @@ class Subject extends Model
         'name_en',
     ];
 
+    public function classes()
+    {
+        return $this->belongsToMany(
+            SchoolClass::class,
+            'class_subjects',
+            'subject_id',
+            'class_id'
+        );
+    } 
+
     public function categories()
     {
         return $this->hasMany(Category::class);
     }
+
 
 }

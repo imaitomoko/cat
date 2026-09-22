@@ -19,6 +19,9 @@
             <a class="menu__item" href="{{ route('admin.schedule.index') }}">スケジュール管理</a>
         </div>
         <div class="menu__button">
+            <a class="menu__item" href="{{ route('admin.report.search') }}">レポート登録</a>
+        </div>
+        <div class="menu__button">
             <a class="menu__item" href="{{ route('admin.mails.index') }}">メール送信</a>
         </div>
     </div>

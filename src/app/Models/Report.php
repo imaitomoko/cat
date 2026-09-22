@@ -32,5 +32,15 @@ class Report extends Model
         return $this->hasMany(Grade::class);
     }
 
+    public function comments()
+    {
+        return $this->belongsToMany(
+            TeacherComment::class,
+            'comment_reports',
+            'report_id',
+            'teacher_comment_id'
+        );
+    }
+
 
 }

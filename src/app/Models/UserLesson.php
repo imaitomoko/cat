@@ -54,5 +54,10 @@ class UserLesson extends Model
         return $this->hasMany(SendTo::class);
     }
 
+    public function reports()
+    {
+        return $this->hasMany(Report::class, 'user_lesson_id');
+    }
+
 
 }

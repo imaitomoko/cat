@@ -25,9 +25,12 @@
         <div class="master-menu__button">
             <a class="master-menu__item" href="{{ route('admin.report.comment') }}">既定コメント登録</a>
         </div>
+        <div class="master-menu__button">
+            <a class="master-menu__item" href="{{ route('admin.report.class.subject') }}">クラス別教科登録</a>
+        </div>
     </div>
     <div class="back__button">
-        <a class="back" href="{{ url()->previous() }}">back</a>
+        <a class="back" href="{{ route('admin.admin') }}">back</a>
     </div>
     @endauth
 </div>

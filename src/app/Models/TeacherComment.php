@@ -14,4 +14,14 @@ class TeacherComment extends Model
         'comment_en',
         'type',
     ];
+
+    public function reports()
+    {
+        return $this->belongsToMany(
+            Report::class,
+            'comment_reports',
+            'teacher_comment_id',
+            'report_id'
+        );
+    }
 }
