@@ -24,4 +24,9 @@ class School extends Model
     {
         return $this->hasMany(Comment::class);
     }
+
+    public function reportPublications()
+    {
+        return $this->hasMany(ReportPublication::class);
+    }
 }

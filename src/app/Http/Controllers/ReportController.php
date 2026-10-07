@@ -18,6 +18,7 @@ use App\Models\Subject;
 use App\Models\TeacherComment;
 use App\Models\GradeMaster;
 use App\Models\Category;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
@@ -49,11 +50,14 @@ class ReportController extends Controller
         $schoolId = $request->school_id;
         $classId = $request->class_id;
 
-        $year = Lesson::where('year', $yearValue)
+        $lessons = Lesson::where('year', $yearValue)
             ->where('school_id', $schoolId)
             ->where('class_id', $classId)
-            ->firstOrFail();
-
+            ->get();
+        if ($lessons->isEmpty()) {
+            abort(404);
+        }
+        $year = $lessons->first();    
         $term = Term::findOrFail($termId);
         $school = School::findOrFail($schoolId);
         $class = SchoolClass::findOrFail($classId);
@@ -74,7 +78,7 @@ class ReportController extends Controller
                 $query->where('term_id', $term->id);
         },
         ])
-            ->where('lesson_id', $year->id)
+            ->whereIn('lesson_id', $lessons->pluck('id'))
             ->where('start_date', '<=', $termEnd->format('Y-m-d'))
             ->where(function ($query) use ($termStart) {
                 $query->whereNull('end_date')
@@ -117,6 +121,173 @@ class ReportController extends Controller
             'class',
             'userLessons'
         ));
+    }
+
+    public function pdf(UserLesson $userLesson, $term_id)
+    {
+
+        $userLesson->load([
+            'user',
+            'lesson',
+        ]);
+
+        $term = Term::findOrFail($term_id);
+        $lesson = $userLesson->lesson;
+        $year = $lesson->year;
+
+        $termStart = Carbon::createFromFormat(
+            'Y-m-d',
+            $year . '-' . $term->start_date
+        );
+
+        $termEnd = Carbon::createFromFormat(
+            'Y-m-d',
+            $year . '-' . $term->end_date
+        );
+
+        $displayStart = Carbon::parse($userLesson->start_date)
+            ->max($termStart);
+
+        $displayEnd = Carbon::parse($userLesson->end_date)
+            ->min($termEnd);
+
+        $statuses = UserLessonStatus::with([
+            'reschedule',
+        ])
+        ->where('user_lesson_id', $userLesson->id)
+        ->whereBetween('date', [
+            $displayStart->format('Y-m-d'),
+            $displayEnd->format('Y-m-d'),
+        ])
+        ->whereNotExists(function ($query) use ($lesson) {
+
+            $query->selectRaw('1')
+                ->from('lesson_values')
+                ->whereColumn(
+                    'lesson_values.date',
+                    'user_lesson_statuses.date'
+                )
+                ->where('lesson_values.lesson_id', $lesson->id)
+                ->where('lesson_values.lesson_value', '休校');
+
+        })
+        ->orderBy('date')
+        ->get();
+
+        $attendance = $statuses->map(function ($status) {
+
+            if (!empty($status->reschedule_to)) {
+
+                $displayDate = Carbon::parse($status->reschedule_to);
+                $isRescheduled = true;
+
+        // 振替の場合だけ reschedule_status を確認
+                if (
+                    $status->reschedule &&
+                    $status->reschedule->reschedule_status === '欠席する'
+                ) {
+                    $displayStatus = 'absence';
+                } else {
+                    $displayStatus = 'present';
+                }
+
+            } else {
+
+                $displayDate = Carbon::parse($status->date);
+                $isRescheduled = false;
+
+                // user_lesson_statuses.status を確認
+                if ($status->status === '欠席する') {
+                    $displayStatus = 'absence';
+                } elseif ($status->status === '休会中') {
+                    $displayStatus = '休会中';
+                } else {
+                // 未受講などは出席
+                    $displayStatus = 'present';
+                }
+            }
+
+            return [
+                'date' => $displayDate,
+                'status' => $displayStatus,
+                'is_rescheduled' => $isRescheduled,
+                'original_date' => Carbon::parse($status->date),
+            ];
+
+        })->sortBy('date')->values();
+
+        $report = Report::with([
+            'grades.subject',
+            'grades.category',
+            'comments',
+        ])
+            ->where('user_lesson_id', $userLesson->id)
+            ->where('term_id', $term_id)
+            ->first();
+
+        $subjects = \App\Models\Subject::whereHas(
+            'classes',
+            function ($query) use ($lesson) {
+                $query->where('classes.id', $lesson->class_id);
+            }
+        )
+            ->with('categories')
+            ->get();
+
+        $commentTypes = [
+            'positive' => '現状肯定',
+            'challenge' => '課題',
+            'improvement' => '改善策',
+            'encouragement' => '期待的な言葉がけ',
+        ];
+
+        $school = \App\Models\School::find(
+            $lesson->school_id
+        );
+
+        $class = \App\Models\SchoolClass::find(
+            $lesson->class_id
+        );
+
+        $css = file_get_contents(
+            public_path('css/admin/report/report_pdf.css')
+        );
+
+        $css .= "
+        @font-face {
+            font-family: 'ipag';
+            font-style: normal;
+            font-weight: normal;
+            src: url('file://" . storage_path('fonts/ipag.ttf') . "');
+        }
+
+        body {
+            font-family: 'ipag', sans-serif;
+        }
+        ";
+
+
+        $pdf = Pdf::loadView(
+            'admin.report.report_pdf',
+            compact(
+                'userLesson',
+                'lesson',
+                'term',
+                'school',
+                'class',
+                'attendance',
+                'subjects',
+                'report',
+                'commentTypes',
+                'css'
+            )
+        );
+
+        return $pdf
+            ->setPaper('a4', 'portrait')
+            ->stream(
+                $userLesson->user->user_name . '_report.pdf'
+            );
     }
 
     public function index(UserLesson $userLesson, $term_id)

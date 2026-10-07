@@ -17,12 +17,14 @@ class SubjectController extends Controller
 
     public function index()
     {
-        $subjects = Subject::paginate(4);
-        $categories = Category::with('subject')->paginate(4);
+        $subjects = Subject::paginate(6);
+        $allSubjects = Subject::orderBy('id')->get();
+        $categories = Category::with('subject')->paginate(8);
 
         return view('admin.report.report_subject', compact(
             'subjects',
-            'categories'
+            'categories',
+            'allSubjects'
         ));
     }
 

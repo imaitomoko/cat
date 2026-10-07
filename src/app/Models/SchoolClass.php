@@ -25,4 +25,9 @@ class SchoolClass extends Model
     {
         return $this->hasMany(Comment::class, 'class_id');
     }
+
+    public function reportPublications()
+    {
+        return $this->hasMany(ReportPublication::class, 'class_id');
+    }
 }

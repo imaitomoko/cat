@@ -20,6 +20,7 @@
                 <th>生徒名</th>
                 <th>期間</th>
                 <th>登録状況</th>
+                <th>印刷</th>
             </tr>
         </thead>
 
@@ -45,8 +46,13 @@
                         Done
                     @endif
                 </td>
+                <td>
+                    @if ($userLesson->reports->isNotEmpty())
+                        <a href="{{ route('admin.report.pdf', ['userLesson' => $userLesson->id,'term_id' => $term->id,]) }}">PDF
+                        </a>
+                    @endif
+                </td>
 
-            </td>
             </tr>
             @endforeach
         </tbody>

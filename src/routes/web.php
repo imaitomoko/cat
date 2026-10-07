@@ -22,6 +22,7 @@ use App\Http\Controllers\TermController;
 use App\Http\Controllers\GradeController;
 use App\Http\Controllers\TeacherCommentController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ReportPublicationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -178,13 +179,21 @@ Route::middleware(['auth:admin'])->group(function () {
     });
 
     Route::prefix('admin')->name('admin.')->group(function () {
-        Route::get('/report/search', [ReportController::class, 'search'])->name('report.search');
-        Route::get('/report/class', [ReportController::class, 'classSearch'])->name('report.class');
-        Route::get('/report/{userLesson}/{term_id}', [ReportController::class, 'index'])->name('report');
-        Route::post('/report/{userLesson}/{term_id}', [ReportController::class, 'store'])->name('report.store');
-
+        Route::get('/report/publication', [ReportPublicationController::class, 'index'])->name('report.publication');
+        Route::get('/report/publication/create',[ReportPublicationController::class, 'create'])->name('report.publication.create');
+        Route::post('/report/publication',[ReportPublicationController::class, 'store'])->name('report.publication.store');
+        Route::delete('/report/publication/{publication}',[ReportPublicationController::class, 'destroy'])->name('report.publication.destroy');
 
     });
+
+    Route::prefix('admin')->name('admin.')->group(function () {
+        Route::get('/report/search', [ReportController::class, 'search'])->name('report.search');
+        Route::get('/report/class', [ReportController::class, 'classSearch'])->name('report.class');
+        Route::get('/report/{userLesson}/{term_id}/pdf', [ReportController::class, 'pdf'])->name('report.pdf');
+        Route::get('/report/{userLesson}/{term_id}', [ReportController::class, 'index'])->name('report');
+        Route::post('/report/{userLesson}/{term_id}', [ReportController::class, 'store'])->name('report.store');
+    });
+
 
 
 

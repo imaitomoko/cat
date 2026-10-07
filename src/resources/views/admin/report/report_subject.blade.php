@@ -107,7 +107,7 @@
                 <label for="subject_id">教科</label>
                 <select name="subject_id" id="subject_id" class="form-control" required>
                     <option value="">選択してください</option>
-                    @foreach($subjects as $subject)
+                    @foreach($allSubjects as $subject)
                         <option value="{{ $subject->id }}">
                             {{ $subject->name }}
                         </option>
