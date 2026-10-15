@@ -20,6 +20,9 @@
         <div class="menu__button">
             <a class="menu__item" href="{{ route('teacher.search') }}">Schedule</a>
         </div>
+        <div class="menu__button">
+            <a class="menu__item" href="{{ route('teacher.report.search') }}">Report</a>
+        </div>
     </div>
     @endauth
 </div>

@@ -24,6 +24,7 @@ use App\Http\Controllers\TeacherCommentController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReportPublicationController;
 use App\Http\Controllers\StudentReportController;
+use App\Http\Controllers\TeacherReportController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -72,6 +73,16 @@ Route::middleware(['auth:teacher'])->group(function () {
     Route::get('/classSearch/{date}', [TeacherClassController::class, 'search'])->name('teacher.classSearch.date');
     Route::get('/class/{lesson}', [TeacherClassController::class, 'classList'])->name('teacher.class.list');
     Route::post('/status/toggle', [TeacherClassController::class, 'toggleStatus'])->name('teacher.status.toggle');
+
+    Route::prefix('teacher')->name('teacher.')->group(function () {
+        Route::get('/report/search', [TeacherReportController::class, 'search'])->name('report.search');
+        Route::get('/report/class', [TeacherReportController::class, 'classSearch'])->name('report.class');
+        Route::get('/report/{userLesson}/{term_id}/pdf', [TeacherReportController::class, 'pdf'])->name('report.pdf');
+        Route::get('/report/{userLesson}/{term_id}', [TeacherReportController::class, 'index'])->name('report');
+        Route::post('/report/{userLesson}/{term_id}', [TeacherReportController::class, 'store'])->name('report.store');
+        Route::delete('/report/{userLesson}/{term_id}',[TeacherReportController::class, 'destroy'])->name('report.destroy');
+    });
+
 });
 
 Route::middleware(['auth:admin'])->group(function () {
@@ -197,9 +208,6 @@ Route::middleware(['auth:admin'])->group(function () {
         Route::post('/report/{userLesson}/{term_id}', [ReportController::class, 'store'])->name('report.store');
         Route::delete('/report/{userLesson}/{term_id}',[ReportController::class, 'destroy'])->name('report.destroy');
     });
-
-
-
 
 
 });
