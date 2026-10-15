@@ -27,6 +27,9 @@
             <a href="/status" class="menu__button">欠席・振替予約</a>
         </div>
         <div>
+            <a href="/report" class="menu__button">レポートカード</a>
+        </div>
+        <div>
             <a href="/mail" class="menu__button">メールアドレス登録・変更</a>
         </div>
     </div>

@@ -57,7 +57,7 @@ td {
 
 /* 日付部分 */
 .attendance-date {
-    background-color: #f2f2f2;
+    background-color: #f9e6f8;
     padding: 5px 2px;
     font-size: 11px;
     min-height: 18px;
@@ -98,7 +98,7 @@ td {
 }
 
 .score-card-title {
-    background-color: #f2f2f2;
+    background-color: #e5fae6;
     padding: 6px 10px;
     font-weight: normal;
     text-align: center;
@@ -130,6 +130,7 @@ td {
     width: 20%;
     text-align: center;
     font-weight: normal;
+    color:blue;
 }
 
 .comment-card {
@@ -142,22 +143,36 @@ td {
 }
 
 .comment-card-title {
-    background-color: #eeeeee;
+    background-color: #e1f9fb;
     border-bottom: 1px solid #999;
     padding: 7px 9px;
     font-weight: normal;
+    text-align: center;
 }
 
 .comment-card-body {
     width: 100%;
-    padding: 10px;
+    padding: 10px 20px 10px 10px;
     box-sizing: border-box;
 }
 
 .comment-text {
-    display: inline-block;
+    display: inline;
     margin-right: 15px;
-    margin-bottom: 4px;
+}
+
+.free-comment {
+    display: block;
+    margin: 5px 10px 8px 0;
+    padding-right: 10px;
+    line-height: 1.5;
+    overflow-wrap: break-word;
+}
+
+.language-break {
+    display: block;
+    clear: both;
+    height: 0;
 }
 
 .footer {

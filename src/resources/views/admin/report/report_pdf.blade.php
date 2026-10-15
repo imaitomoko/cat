@@ -110,7 +110,6 @@
         <div class="comment-card-body">
 
             @foreach ($commentTypes as $type => $typeName)
-
                 @php
                     $teacherComment = $report
                         ? $report->comments->firstWhere('type', $type)
@@ -118,54 +117,36 @@
                 @endphp
 
                 @if ($teacherComment && $teacherComment->comment_en)
-
-                    <div class="comment-text">
+                    <span class="comment-text">
                         {{ $teacherComment->comment_en }}
-                    </div>
-
+                    </span>
                 @endif
-
             @endforeach
-
-
-            {{-- フリーコメント --}}
- 
             @if ($report?->free_comment_en)
-
-                <div class="comment-text">
+                <div class="free-comment">
                     {!! nl2br(e($report->free_comment_en)) !!}
                 </div>
             @endif
-        </div>
-        <div class="comment-card-body">
-
+            <div class="language-break"></div>
+ 
             @foreach ($commentTypes as $type => $typeName)
-
                 @php
-                $teacherComment = $report
-                        ? $report->comments->firstWhere('type', $type)
-                        : null;
+                    $teacherComment = $report
+                    ? $report->comments->firstWhere('type', $type)
+                    : null;
                 @endphp
 
                 @if ($teacherComment && $teacherComment->comment_ja)
-
-                    <div class="comment-text">
+                    <span class="comment-text">
                         {{ $teacherComment->comment_ja }}
-                    </div>
-
+                    </span>
                 @endif
-
             @endforeach
-
-            {{-- フリーコメント --}}
             @if ($report?->free_comment_ja)
-
-                <div class="comment-text">
+                <div class="free-comment">
                     {!! nl2br(e($report->free_comment_ja)) !!}
                 </div>
-
             @endif
-
         </div>
 
     </div>

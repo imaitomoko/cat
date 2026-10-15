@@ -179,17 +179,20 @@ class ReportController extends Controller
             if (!empty($status->reschedule_to)) {
 
                 $displayDate = Carbon::parse($status->reschedule_to);
-                $isRescheduled = true;
 
-        // 振替の場合だけ reschedule_status を確認
                 if (
                     $status->reschedule &&
-                    $status->reschedule->reschedule_status === '欠席する'
+                    in_array($status->reschedule->reschedule_status, [
+                        '欠席する',
+                        '無連絡欠席',
+                    ])
                 ) {
                     $displayStatus = 'absence';
                 } else {
                     $displayStatus = 'present';
                 }
+
+                $isRescheduled = true;
 
             } else {
 
@@ -197,7 +200,10 @@ class ReportController extends Controller
                 $isRescheduled = false;
 
                 // user_lesson_statuses.status を確認
-                if ($status->status === '欠席する') {
+                if (in_array($status->status, [
+                    '欠席する',
+                    '無連絡欠席',
+                ])) {
                     $displayStatus = 'absence';
                 } elseif ($status->status === '休会中') {
                     $displayStatus = '休会中';
@@ -335,8 +341,6 @@ class ReportController extends Controller
             ->where('user_lesson_id', $userLesson->id)
             ->where('term_id', $term->id)
             ->first();
-            
-        
 
         return view('admin.report.report', compact(
             'year',
@@ -424,6 +428,35 @@ class ReportController extends Controller
                 'term_id' => $term_id,
             ])
             ->with('success', 'レポートを登録しました。');
+    }
+
+    public function destroy(UserLesson $userLesson, $term_id)
+    {
+        DB::transaction(function () use ($userLesson, $term_id) {
+
+        // 対象のレポートを取得
+            $report = Report::where('user_lesson_id', $userLesson->id)
+                ->where('term_id', $term_id)
+                ->firstOrFail();
+
+        // レポートに紐づく評定を削除
+            DB::table('grades')
+            ->where('report_id', $report->id)
+            ->delete();
+
+        // レポートに紐づく定型コメントを削除
+            DB::table('comment_reports')
+                ->where('report_id', $report->id)
+                ->delete();
+
+        // レポートを削除
+            $report->delete();
+        });
+
+        return redirect()->route('admin.report', [
+            'userLesson' => $userLesson->id,
+            'term_id' => $term_id,
+        ])->with('success', 'レポートを削除しました。');
     }
 }
 

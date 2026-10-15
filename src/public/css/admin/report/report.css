@@ -192,6 +192,21 @@ h2 {
     opacity: 0.8;
 }
 
+.delete_button {
+    background-color: #dc3545;
+    color: #fff;
+    display: block;
+    margin: 35px auto 0;
+    padding: 8px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.delete_button:hover {
+    background-color: #b02a37;
+}
+
 .back__button {
     text-align: center;
     width: 100px;

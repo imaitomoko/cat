@@ -23,7 +23,7 @@ use App\Http\Controllers\GradeController;
 use App\Http\Controllers\TeacherCommentController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReportPublicationController;
-
+use App\Http\Controllers\StudentReportController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -46,6 +46,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/status/makeup/{userLessonId}', [StatusController::class, 'makeupShow'])->name('status.makeup');
     Route::post('/makeup/update/{userLessonId}', [StatusController::class, 'makeupUpdate'])->name('makeup.update');
     Route::delete('/reschedule/cancel/{rescheduleId}', [StatusController::class, 'cancelReschedule'])->name('reschedule.cancel');
+    Route::get('/report', [StudentReportController::class, 'index'])->name('report');
+    Route::get('/report/{userLessonId}/{term_id}/pdf',
+        [StudentReportController::class, 'pdf'])->name('report.pdf');
 });
 
 Route::prefix('teacher')->group(function () {
@@ -192,6 +195,7 @@ Route::middleware(['auth:admin'])->group(function () {
         Route::get('/report/{userLesson}/{term_id}/pdf', [ReportController::class, 'pdf'])->name('report.pdf');
         Route::get('/report/{userLesson}/{term_id}', [ReportController::class, 'index'])->name('report');
         Route::post('/report/{userLesson}/{term_id}', [ReportController::class, 'store'])->name('report.store');
+        Route::delete('/report/{userLesson}/{term_id}',[ReportController::class, 'destroy'])->name('report.destroy');
     });
 
 

@@ -169,11 +169,20 @@
                     name="free_comment_ja"
                     id="free_comment_ja"
                     rows="5"
-                    placeholder="自由コメント"
+                    placeholder="テスト結果やその他コメント"
                 >{{ old('free_comment_ja', $report->free_comment_ja ?? '') }}</textarea>
             </div>
         </div>
         <button class="register_button" type="submit" >登録</button>
+    </form>
+
+    <form action="{{ route('admin.report.destroy', ['userLesson' => $userLesson->id,'term_id' => $term->id,]) }}" method="POST" onsubmit="return confirm('このレポートを削除しますか？');">
+        @csrf
+        @method('DELETE')
+
+        <button type="submit" class="delete_button">
+            削除
+        </button>
     </form>
 
     <div class="back__button">
