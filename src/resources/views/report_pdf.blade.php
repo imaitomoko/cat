@@ -120,7 +120,11 @@
                 @if ($teacherComment && $teacherComment->comment_en)
 
                     <div class="comment-text">
-                        {{ $teacherComment->comment_en }}
+                        {{ str_replace(
+                            '{name}',
+                            $userLesson->user->user_name,
+                            $teacherComment->comment_en
+                        ) }}
                     </div>
 
                 @endif
@@ -150,7 +154,11 @@
                 @if ($teacherComment && $teacherComment->comment_ja)
 
                     <div class="comment-text">
-                        {{ $teacherComment->comment_ja }}
+                        {{ str_replace(
+                            '{name}',
+                            $userLesson->user->user_name,
+                            $teacherComment->comment_ja
+                        ) }}
                     </div>
 
                 @endif

@@ -118,7 +118,11 @@
 
                 @if ($teacherComment && $teacherComment->comment_en)
                     <span class="comment-text">
-                        {{ $teacherComment->comment_en }}
+                        {{ str_replace(
+                            '{name}',
+                            $userLesson->user->user_name,
+                            $teacherComment->comment_en
+                        ) }}
                     </span>
                 @endif
             @endforeach
@@ -138,7 +142,11 @@
 
                 @if ($teacherComment && $teacherComment->comment_ja)
                     <span class="comment-text">
-                        {{ $teacherComment->comment_ja }}
+                        {{ str_replace(
+                            '{name}',
+                            $userLesson->user->user_name,
+                            $teacherComment->comment_ja
+                        ) }}
                     </span>
                 @endif
             @endforeach
