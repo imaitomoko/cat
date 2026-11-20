@@ -21,8 +21,8 @@ class TeacherCommentController extends Controller
 
         $validated = $request->validate([
             'type' => 'required|in:positive,challenge,improvement,encouragement',
-            'comment_ja' => 'required|string|max:100',
-            'comment_en' => 'required|string|max:100',
+            'comment_ja' => 'required|string|max:200',
+            'comment_en' => 'required|string|max:200',
         ]);
 
         TeacherComment::create($validated);
